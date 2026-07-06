@@ -15,15 +15,15 @@ docker:
 
 l4t:
   release: "35.2.1"
-  bsp_url: "https://developer.nvidia.com/downloads/jetson-linux-r3521-aarch64.tbz2"
-  bsp_sha256: "1111111111111111111111111111111111111111111111111111111111111111"
-  sample_rootfs_url: "https://developer.nvidia.com/downloads/tegra_linux_sample-root-filesystem_r35.2.1_aarch64.tbz2"
-  sample_rootfs_sha256: "2222222222222222222222222222222222222222222222222222222222222222"
+  bsp_url: "https://developer.nvidia.com/downloads/jetson-linux-r3521-aarch64tbz2"
+  bsp_sha256: "9959bcd3de79de231a8fb54119f9cdb57a753542d44d994e346664028142d40d"
+  sample_rootfs_url: "https://developer.nvidia.com/downloads/linux-sample-root-filesystem-r3521aarch64tbz2"
+  sample_rootfs_sha256: "aad1ba13dbae2c8657123d39b23dc836ea46f7d7a2da24a8adb4c0e58da501d6"
 
 toolchain:
   name: "bootlin-gcc-9.3"
-  url: "https://developer.nvidia.com/downloads/bootlin-toolchain-gcc-93.tar.xz"
-  sha256: "3333333333333333333333333333333333333333333333333333333333333333"
+  url: "https://developer.nvidia.com/embedded/jetson-linux/bootlin-toolchain-gcc-93"
+  sha256: "7725b4603193a9d3751d2715ef242bd16ded46b4e0610c83e76d8891cf580975"
   cross_compile_prefix: "aarch64-buildroot-linux-gnu-"
 
 workspace:
