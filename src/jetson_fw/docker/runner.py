@@ -72,7 +72,17 @@ class DockerRunner:
         dry_run: bool = False,
         extra_env: Mapping[str, str] | None = None,
     ) -> None:
-        self.shell.run(
-            self.build_run_command(inner_command, flash=flash, extra_env=extra_env),
-            dry_run=dry_run,
+        command = self.build_run_command(inner_command, flash=flash, extra_env=extra_env)
+        environment = dict(self.config.docker.environment)
+        if extra_env:
+            environment.update(extra_env)
+        self.shell.logger.debug(
+            "docker.run "
+            f"image={image_reference(self.config)} flash={flash} dry_run={dry_run} "
+            f"repo_mount={self.config.repo_root}:{self.repo_mount} "
+            f"volumes={list(self.config.docker.volumes)} "
+            f"device_mode={'flash' if flash else 'build'} "
+            f"env_keys={sorted(environment.keys())}"
         )
+        self.shell.logger.debug(f"docker.command {self.shell.format_command(command)}")
+        self.shell.run(command, dry_run=dry_run)

@@ -18,7 +18,7 @@ def build_config(
     dockerfile = repo_root / "docker" / "Dockerfile"
     dockerfile.parent.mkdir()
     dockerfile.write_text("FROM ubuntu:20.04\n", encoding="utf-8")
-    kernel: dict = {"source_tag": "jetson_35.2.1", "defconfig": "tegra_defconfig"}
+    kernel: dict[str, object] = {"source_tag": "jetson_35.2.1", "defconfig": "tegra_defconfig"}
     if extra_dts:
         kernel["extra_dts"] = extra_dts
     if fragments:

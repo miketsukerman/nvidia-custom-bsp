@@ -73,6 +73,6 @@ def test_source_sync_stage_uses_kernel_only_mode(tmp_path: Path) -> None:
         "tmp_script=$(mktemp ./source_sync.filtered.XXXXXX.sh)",
         "trap 'rm -f \"$tmp_script\"' EXIT",
         f"sed '/{escaped_source}/d' ./source_sync.sh > \"$tmp_script\"",
-        "chmod +x \"$tmp_script\"",
-        "\"$tmp_script\" -k jetson_35.2.1",
+        'chmod +x "$tmp_script"',
+        '"$tmp_script" -k jetson_35.2.1',
     ]

@@ -13,6 +13,11 @@ class ToolchainStage(Stage):
         downloads = context.workspace / "downloads"
         archive = downloads / "toolchain.tar.xz"
         toolchain_root = context.workspace / "toolchain"
+        context.logger.debug(
+            "toolchain.paths "
+            f"downloads={downloads} archive={archive} toolchain_root={toolchain_root}"
+        )
+        context.logger.debug(f"toolchain.cache_check archive_exists={archive.exists()}")
         return [
             f"mkdir -p {downloads} {toolchain_root}",
             f"if [ ! -f {archive} ]; then wget -O {archive} {context.config.toolchain.url}; fi",

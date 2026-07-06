@@ -1,4 +1,10 @@
-"""Rich-backed console logging helpers."""
+"""Rich-backed console logging helpers.
+
+Logging contract:
+- normal mode: info/success/warning/error are emitted, debug is suppressed.
+- verbose mode: debug emits additional execution metadata.
+- quiet mode: only errors are emitted.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +15,7 @@ from rich.console import Console
 
 @dataclass
 class Logger:
-    """Minimal structured logger."""
+    """Minimal structured logger honoring normal/verbose/quiet output modes."""
 
     verbose: bool = False
     quiet: bool = False

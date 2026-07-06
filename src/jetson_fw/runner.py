@@ -33,8 +33,17 @@ class BuildRunner:
     def run_build(
         self, *, stage_name: str | None = None, dry_run: bool = False, force: bool = False
     ) -> None:
-        ordered = self._ordered_stage_names(stage_name or "assemble_rootfs")
+        final_stage = stage_name or "assemble_rootfs"
+        ordered = self._ordered_stage_names(final_stage)
         context = StageContext(self.config, self.docker, self.logger, dry_run=dry_run, force=force)
+        dependency_map = {name: list(self.stages[name].dependencies) for name in ordered}
+        self.logger.debug(
+            f"build.plan final_stage={final_stage} stage_order={ordered} dependencies={dependency_map}"
+        )
+        self.logger.debug(
+            f"build.context workspace={context.workspace} state_dir={context.state_dir} "
+            f"dry_run={dry_run} force={force}"
+        )
         for name in ordered:
             self.logger.info(f"Running stage: {name}")
             self.stages[name].run(context)
@@ -50,6 +59,15 @@ class BuildRunner:
             dry_run=dry_run,
             force=force,
             target=target,
+        )
+        dependency_map = {name: list(self.stages[name].dependencies) for name in ordered}
+        self.logger.debug(
+            "flash.plan "
+            f"target={target.name} stage_order={ordered} dependencies={dependency_map}"
+        )
+        self.logger.debug(
+            f"flash.context workspace={context.workspace} state_dir={context.state_dir} "
+            f"dry_run={dry_run} force={force}"
         )
         for name in ordered:
             self.logger.info(f"Running stage: {name}")

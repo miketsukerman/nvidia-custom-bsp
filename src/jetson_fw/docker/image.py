@@ -18,6 +18,9 @@ def ensure_image(config: BuildConfig, shell: ShellRunner, *, dry_run: bool = Fal
     """Build or pull the builder image."""
 
     image = image_reference(config)
+    shell.logger.debug(
+        f"image.resolve image={image} build_mode={'build' if config.docker.build else 'pull'}"
+    )
     if config.docker.build:
         command = [
             "docker",
@@ -30,4 +33,5 @@ def ensure_image(config: BuildConfig, shell: ShellRunner, *, dry_run: bool = Fal
         ]
     else:
         command = ["docker", "pull", image]
+    shell.logger.debug(f"image.command {shell.format_command(command)}")
     shell.run(command, dry_run=dry_run)

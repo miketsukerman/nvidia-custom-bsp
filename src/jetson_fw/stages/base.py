@@ -54,15 +54,27 @@ class Stage(ABC):
         """Return the shell commands executed for this stage."""
 
     def run(self, context: StageContext) -> None:
+        marker = context.marker_path(self.name)
         if self.should_skip(context):
             context.logger.info(f"Skipping {self.name}; marker exists.")
+            context.logger.debug(
+                f"stage.skip name={self.name} marker={marker} force={context.force}"
+            )
             return
+        context.logger.debug(
+            "stage.start "
+            f"name={self.name} dry_run={context.dry_run} force={context.force} "
+            f"workspace={context.workspace} state_dir={context.state_dir} "
+            f"target={context.target.name if context.target else 'none'}"
+        )
         self.validate(context)
         inner = " && ".join(
             [
                 f"mkdir -p {context.state_dir}",
                 *self.commands(context),
-                f"touch {context.marker_path(self.name)}",
+                f"touch {marker}",
             ]
         )
+        context.logger.debug(f"stage.commands name={self.name} count={len(inner.split(' && '))}")
         context.docker.run(inner, flash=self.name == "flash", dry_run=context.dry_run)
+        context.logger.debug(f"stage.end name={self.name} marker={marker}")

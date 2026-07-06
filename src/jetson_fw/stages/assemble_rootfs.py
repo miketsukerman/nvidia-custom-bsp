@@ -14,6 +14,16 @@ class AssembleRootfsStage(Stage):
         rootfs_dir = l4t_dir / "rootfs"
         kernel_source = l4t_dir / "source" / "public" / "kernel" / "kernel-5.10"
         out_dir = context.workspace / "out" / "kernel"
+        context.logger.debug(
+            "assemble_rootfs.context "
+            f"l4t_dir={l4t_dir} rootfs_dir={rootfs_dir} out_dir={out_dir}"
+        )
+        context.logger.debug(
+            "assemble_rootfs.options "
+            f"install_modules={context.config.rootfs.install_modules} "
+            f"extra_packages_count={len(context.config.rootfs.extra_packages)} "
+            f"overlay_count={len(context.config.rootfs.overlays)}"
+        )
         commands = [f"cd {l4t_dir} && ./apply_binaries.sh"]
         if context.config.rootfs.install_modules:
             commands.append(

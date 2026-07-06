@@ -17,6 +17,15 @@ class BuildKernelStage(Stage):
             f"{context.workspace}/toolchain/bin/" f"{context.config.toolchain.cross_compile_prefix}"
         )
         make_vars = f"ARCH=arm64 CROSS_COMPILE={cross_compile}"
+        context.logger.debug(
+            "build_kernel.context "
+            f"source_dir={source_dir} out_dir={out_dir} make_vars={make_vars}"
+        )
+        context.logger.debug(
+            "build_kernel.options "
+            f"extra_dts_count={len(context.config.kernel.extra_dts)} "
+            f"config_fragment_count={len(context.config.kernel.config_fragments)}"
+        )
         commands = [
             f"mkdir -p {out_dir}",
         ]

@@ -16,6 +16,11 @@ class FlashStage(Stage):
     def commands(self, context: StageContext) -> list[str]:
         assert context.target is not None
         l4t_dir = context.workspace / "Linux_for_Tegra"
+        context.logger.debug(
+            "flash.context "
+            f"target={context.target.name} flash_config={context.target.flash_config.value} "
+            f"root_device={context.target.root_device.value} l4t_dir={l4t_dir}"
+        )
         return [
             f"cd {l4t_dir} && ./flash.sh {context.target.flash_config.value} {context.target.root_device.value}"
         ]

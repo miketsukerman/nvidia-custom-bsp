@@ -40,6 +40,12 @@ Flash a board with USB passthrough:
 jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 ```
 
+## Logging modes
+
+- Default mode prints stage progress, command output, warnings, and success/error summaries.
+- `--verbose` adds debug metadata for stage orchestration, Docker/image context, command cwd/env override keys, and command timing/exit summaries.
+- `--quiet` suppresses non-error output.
+
 ## YAML Reference
 
 ### `version`
