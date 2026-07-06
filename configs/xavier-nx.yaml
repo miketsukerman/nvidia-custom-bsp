@@ -1,0 +1,53 @@
+version: 1
+
+docker:
+  image: "jetson-firmware-builder:35.2.1"
+  dockerfile: "../docker/Dockerfile"
+  build: true
+  registry: ""
+  privileged_for_flash: true
+  devices:
+    - "/dev/bus/usb"
+  volumes:
+    - "../build:/workspace/build"
+  environment:
+    JOBS: "8"
+
+l4t:
+  release: "35.2.1"
+  bsp_url: "https://developer.nvidia.com/downloads/jetson-linux-r3521-aarch64.tbz2"
+  bsp_sha256: "1111111111111111111111111111111111111111111111111111111111111111"
+  sample_rootfs_url: "https://developer.nvidia.com/downloads/tegra_linux_sample-root-filesystem_r35.2.1_aarch64.tbz2"
+  sample_rootfs_sha256: "2222222222222222222222222222222222222222222222222222222222222222"
+
+toolchain:
+  name: "bootlin-gcc-9.3"
+  url: "https://developer.nvidia.com/downloads/bootlin-toolchain-gcc-93.tar.xz"
+  sha256: "3333333333333333333333333333333333333333333333333333333333333333"
+  cross_compile_prefix: "aarch64-buildroot-linux-gnu-"
+
+workspace:
+  root: "/workspace/build"
+  keep_intermediate: true
+
+kernel:
+  source_tag: "jetson_35.2.1"
+  defconfig: "tegra_defconfig"
+  config_fragments:
+    - "../fixtures/configs/enable-can.config"
+  extra_dts:
+    - "../fixtures/dts/xavier-carrier.dts"
+
+rootfs:
+  install_modules: true
+  extra_packages: []
+  overlays:
+    - src: "../fixtures/overlays/etc"
+      dest: "/etc"
+
+targets:
+  - name: "xavier-nx"
+    module: "p3668"
+    flash_config: "jetson-xavier-nx-devkit-emmc"
+    root_device: "mmcblk0p1"
+    enabled: true
