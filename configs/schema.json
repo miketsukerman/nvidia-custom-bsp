@@ -1,0 +1,375 @@
+{
+  "$defs": {
+    "DockerConfig": {
+      "additionalProperties": false,
+      "description": "Docker execution settings.",
+      "properties": {
+        "image": {
+          "description": "Docker image tag used for builder containers",
+          "title": "Image",
+          "type": "string"
+        },
+        "dockerfile": {
+          "default": "docker/Dockerfile",
+          "description": "Path to Dockerfile used when build is true",
+          "format": "path",
+          "title": "Dockerfile",
+          "type": "string"
+        },
+        "build": {
+          "default": true,
+          "description": "Build image locally instead of pulling",
+          "title": "Build",
+          "type": "boolean"
+        },
+        "registry": {
+          "default": "",
+          "description": "Optional registry prefix for image pulls/builds",
+          "title": "Registry",
+          "type": "string"
+        },
+        "privileged_for_flash": {
+          "default": true,
+          "description": "Run flash containers with --privileged",
+          "title": "Privileged For Flash",
+          "type": "boolean"
+        },
+        "devices": {
+          "description": "Host device paths passed through for flashing",
+          "items": {
+            "format": "path",
+            "type": "string"
+          },
+          "title": "Devices",
+          "type": "array"
+        },
+        "volumes": {
+          "description": "Additional host:container[:mode] bind mounts",
+          "items": {
+            "type": "string"
+          },
+          "title": "Volumes",
+          "type": "array"
+        },
+        "environment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional environment variables for the container",
+          "title": "Environment",
+          "type": "object"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "DockerConfig",
+      "type": "object"
+    },
+    "FlashConfigEnum": {
+      "description": "Supported L4T R35.2.1 flash configurations.",
+      "enum": [
+        "jetson-xavier-nx-devkit-emmc",
+        "jetson-orin-nano-devkit"
+      ],
+      "title": "FlashConfigEnum",
+      "type": "string"
+    },
+    "KernelConfig": {
+      "additionalProperties": false,
+      "description": "Kernel build options.",
+      "properties": {
+        "source_tag": {
+          "default": "jetson_35.2.1",
+          "description": "Tag used with source_sync.sh -t",
+          "title": "Source Tag",
+          "type": "string"
+        },
+        "defconfig": {
+          "default": "tegra_defconfig",
+          "description": "Kernel defconfig target",
+          "title": "Defconfig",
+          "type": "string"
+        },
+        "config_fragments": {
+          "description": "Optional kernel config fragment files",
+          "items": {
+            "format": "path",
+            "type": "string"
+          },
+          "title": "Config Fragments",
+          "type": "array"
+        },
+        "extra_dts": {
+          "description": "Optional custom DTS files to include in the build",
+          "items": {
+            "format": "path",
+            "type": "string"
+          },
+          "title": "Extra Dts",
+          "type": "array"
+        }
+      },
+      "title": "KernelConfig",
+      "type": "object"
+    },
+    "L4TConfig": {
+      "additionalProperties": false,
+      "description": "Jetson Linux archive inputs.",
+      "properties": {
+        "release": {
+          "default": "35.2.1",
+          "description": "L4T release version",
+          "title": "Release",
+          "type": "string"
+        },
+        "bsp_url": {
+          "description": "URL to Jetson Linux BSP archive",
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Bsp Url",
+          "type": "string"
+        },
+        "bsp_sha256": {
+          "description": "SHA256 for bsp_url artifact",
+          "title": "Bsp Sha256",
+          "type": "string"
+        },
+        "sample_rootfs_url": {
+          "description": "URL to sample root filesystem archive",
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Sample Rootfs Url",
+          "type": "string"
+        },
+        "sample_rootfs_sha256": {
+          "description": "SHA256 for sample_rootfs_url artifact",
+          "title": "Sample Rootfs Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bsp_url",
+        "bsp_sha256",
+        "sample_rootfs_url",
+        "sample_rootfs_sha256"
+      ],
+      "title": "L4TConfig",
+      "type": "object"
+    },
+    "ModuleEnum": {
+      "description": "Supported Jetson modules.",
+      "enum": [
+        "p3668",
+        "p3767"
+      ],
+      "title": "ModuleEnum",
+      "type": "string"
+    },
+    "RootDeviceEnum": {
+      "description": "Supported root device targets.",
+      "enum": [
+        "mmcblk0p1",
+        "internal"
+      ],
+      "title": "RootDeviceEnum",
+      "type": "string"
+    },
+    "RootfsConfig": {
+      "additionalProperties": false,
+      "description": "Rootfs customization options.",
+      "properties": {
+        "install_modules": {
+          "default": true,
+          "description": "Install kernel modules into rootfs",
+          "title": "Install Modules",
+          "type": "boolean"
+        },
+        "extra_packages": {
+          "description": "Optional apt packages",
+          "items": {
+            "type": "string"
+          },
+          "title": "Extra Packages",
+          "type": "array"
+        },
+        "overlays": {
+          "description": "Files or directories copied into rootfs",
+          "items": {
+            "$ref": "#/$defs/RootfsOverlay"
+          },
+          "title": "Overlays",
+          "type": "array"
+        }
+      },
+      "title": "RootfsConfig",
+      "type": "object"
+    },
+    "RootfsOverlay": {
+      "additionalProperties": false,
+      "description": "Overlay content copied into rootfs.",
+      "properties": {
+        "src": {
+          "description": "Source file or directory path",
+          "format": "path",
+          "title": "Src",
+          "type": "string"
+        },
+        "dest": {
+          "description": "Absolute destination path within rootfs",
+          "title": "Dest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "src",
+        "dest"
+      ],
+      "title": "RootfsOverlay",
+      "type": "object"
+    },
+    "TargetConfig": {
+      "additionalProperties": false,
+      "description": "Per-target flashing options.",
+      "properties": {
+        "name": {
+          "description": "Target name used by the CLI",
+          "title": "Name",
+          "type": "string"
+        },
+        "module": {
+          "$ref": "#/$defs/ModuleEnum",
+          "description": "Jetson module identifier"
+        },
+        "flash_config": {
+          "$ref": "#/$defs/FlashConfigEnum",
+          "description": "flash.sh board configuration name"
+        },
+        "root_device": {
+          "$ref": "#/$defs/RootDeviceEnum",
+          "description": "flash.sh root device argument"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether target is active for build/all commands",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "module",
+        "flash_config",
+        "root_device"
+      ],
+      "title": "TargetConfig",
+      "type": "object"
+    },
+    "ToolchainConfig": {
+      "additionalProperties": false,
+      "description": "Cross compilation toolchain metadata.",
+      "properties": {
+        "name": {
+          "default": "bootlin-gcc-9.3",
+          "description": "Toolchain name identifier",
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "description": "Toolchain archive URL",
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA256 for toolchain archive",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "cross_compile_prefix": {
+          "default": "aarch64-buildroot-linux-gnu-",
+          "description": "Cross-compiler prefix used for kernel build",
+          "title": "Cross Compile Prefix",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "sha256"
+      ],
+      "title": "ToolchainConfig",
+      "type": "object"
+    },
+    "WorkspaceConfig": {
+      "additionalProperties": false,
+      "description": "Workspace options inside the builder container.",
+      "properties": {
+        "root": {
+          "default": "/workspace/build",
+          "description": "Workspace root inside container",
+          "format": "path",
+          "title": "Root",
+          "type": "string"
+        },
+        "keep_intermediate": {
+          "default": true,
+          "description": "Keep intermediate artifacts",
+          "title": "Keep Intermediate",
+          "type": "boolean"
+        }
+      },
+      "title": "WorkspaceConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Root build configuration.",
+  "properties": {
+    "version": {
+      "const": 1,
+      "default": 1,
+      "description": "Schema version",
+      "title": "Version",
+      "type": "integer"
+    },
+    "docker": {
+      "$ref": "#/$defs/DockerConfig"
+    },
+    "l4t": {
+      "$ref": "#/$defs/L4TConfig"
+    },
+    "toolchain": {
+      "$ref": "#/$defs/ToolchainConfig"
+    },
+    "workspace": {
+      "$ref": "#/$defs/WorkspaceConfig"
+    },
+    "kernel": {
+      "$ref": "#/$defs/KernelConfig"
+    },
+    "rootfs": {
+      "$ref": "#/$defs/RootfsConfig"
+    },
+    "targets": {
+      "description": "Jetson targets sharing the same kernel and rootfs build",
+      "items": {
+        "$ref": "#/$defs/TargetConfig"
+      },
+      "minItems": 1,
+      "title": "Targets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "docker",
+    "l4t",
+    "toolchain",
+    "targets"
+  ],
+  "title": "BuildConfig",
+  "type": "object"
+}

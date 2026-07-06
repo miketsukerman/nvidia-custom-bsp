@@ -30,14 +30,18 @@ class BuildRunner:
             "flash": FlashStage(),
         }
 
-    def run_build(self, *, stage_name: str | None = None, dry_run: bool = False, force: bool = False) -> None:
+    def run_build(
+        self, *, stage_name: str | None = None, dry_run: bool = False, force: bool = False
+    ) -> None:
         ordered = self._ordered_stage_names(stage_name or "assemble_rootfs")
         context = StageContext(self.config, self.docker, self.logger, dry_run=dry_run, force=force)
         for name in ordered:
             self.logger.info(f"Running stage: {name}")
             self.stages[name].run(context)
 
-    def run_flash(self, target: TargetConfig, *, dry_run: bool = False, force: bool = False) -> None:
+    def run_flash(
+        self, target: TargetConfig, *, dry_run: bool = False, force: bool = False
+    ) -> None:
         ordered = self._ordered_stage_names("flash")
         context = StageContext(
             self.config,
