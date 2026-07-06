@@ -182,7 +182,10 @@ class KernelConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    source_tag: str = Field(default="jetson_35.2.1", description="Tag used with source_sync.sh -t")
+    source_tag: str = Field(
+        default="jetson_35.2.1",
+        description="Kernel/device-tree tag used for the filtered source_sync.sh kernel sync",
+    )
     defconfig: str = Field(default="tegra_defconfig", description="Kernel defconfig target")
     config_fragments: list[Path] = Field(
         default_factory=list,

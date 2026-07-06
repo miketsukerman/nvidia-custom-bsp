@@ -71,7 +71,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `keep_intermediate` (default `true`)
 
 ### `kernel`
-- `source_tag` (default `jetson_35.2.1`)
+- `source_tag` (default `jetson_35.2.1`): used for the kernel/device-tree source sync that the build runs before compiling.
 - `defconfig` (default `tegra_defconfig`)
 - `config_fragments` (default empty)
 - `extra_dts` (default empty)
