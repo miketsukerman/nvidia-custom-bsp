@@ -18,7 +18,7 @@ def build_config(
     dockerfile = repo_root / "docker" / "Dockerfile"
     dockerfile.parent.mkdir()
     dockerfile.write_text("FROM ubuntu:20.04\n", encoding="utf-8")
-    kernel: dict = {"source_tag": "jetson_35.2.1", "defconfig": "tegra_defconfig"}
+    kernel: dict[str, object] = {"source_tag": "jetson_35.2.1", "defconfig": "tegra_defconfig"}
     if extra_dts:
         kernel["extra_dts"] = extra_dts
     if fragments:
@@ -78,16 +78,16 @@ def test_build_kernel_passes_arch_and_cross_compile_to_make(tmp_path: Path) -> N
     config = build_config(tmp_path)
     context = make_context(config)
 
-    source_dir = "/workspace/build/Linux_for_Tegra/source/public/kernel/kernel-5.10"
+    source_dir = "/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10"
     out_dir = "/workspace/build/out/kernel"
     cross_compile = "/workspace/build/toolchain/bin/aarch64-buildroot-linux-gnu-"
     make_vars = f"ARCH=arm64 CROSS_COMPILE={cross_compile}"
 
     cmds = BuildKernelStage().commands(context)
 
-    assert f"make -C {source_dir} O={out_dir} {make_vars} tegra_defconfig" in cmds
+    assert f"cd {source_dir} && make {make_vars} O={out_dir} tegra_defconfig" in cmds
     assert (
-        f"make -C {source_dir} O={out_dir} {make_vars} Image dtbs modules -j${{JOBS:-$(nproc)}}"
+        f"cd {source_dir} && make {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"
         in cmds
     )
 
@@ -115,7 +115,7 @@ def test_build_kernel_with_extra_dts(tmp_path: Path) -> None:
     config = build_config(tmp_path, extra_dts=[str(dts_host)])
     context = make_context(config)
 
-    source_dir = "/workspace/build/Linux_for_Tegra/source/public/kernel/kernel-5.10"
+    source_dir = "/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10"
     expected_container_dts = "/workspace/repo/fixtures/dts/xavier-carrier.dts"
     cmds = BuildKernelStage().commands(context)
 
@@ -132,9 +132,19 @@ def test_build_kernel_with_config_fragment(tmp_path: Path) -> None:
     context = make_context(config)
 
     expected_container_frag = "/workspace/repo/fixtures/configs/enable-can.config"
+    source_dir = "/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10"
+    cross_compile = "/workspace/build/toolchain/bin/aarch64-buildroot-linux-gnu-"
+    make_vars = f"ARCH=arm64 CROSS_COMPILE={cross_compile}"
     cmds = BuildKernelStage().commands(context)
 
-    assert any("merge_config.sh" in c and expected_container_frag in c for c in cmds)
+    assert any(
+        c
+        == (
+            f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
+            f"-O /workspace/build/out/kernel /workspace/build/out/kernel/.config {expected_container_frag}"
+        )
+        for c in cmds
+    )
     # merge_config comes after defconfig make
     defconfig_idx = next(i for i, c in enumerate(cmds) if "tegra_defconfig" in c)
     merge_idx = next(i for i, c in enumerate(cmds) if "merge_config.sh" in c)

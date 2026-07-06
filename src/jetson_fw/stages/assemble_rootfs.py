@@ -12,7 +12,7 @@ class AssembleRootfsStage(Stage):
     def commands(self, context: StageContext) -> list[str]:
         l4t_dir = context.workspace / "Linux_for_Tegra"
         rootfs_dir = l4t_dir / "rootfs"
-        kernel_source = l4t_dir / "source" / "public" / "kernel" / "kernel-5.10"
+        kernel_source = context.kernel_source_dir
         out_dir = context.workspace / "out" / "kernel"
         commands = [f"cd {l4t_dir} && ./apply_binaries.sh"]
         if context.config.rootfs.install_modules:
