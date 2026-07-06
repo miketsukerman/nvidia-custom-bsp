@@ -1,0 +1,35 @@
+services:
+  validate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/workspace/repo
+      - ./build:/workspace/build
+    working_dir: /workspace/repo
+    entrypoint: ["python3", "-m", "jetson_fw.cli"]
+    command: ["validate", "configs/xavier-nx.yaml"]
+
+  build:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/workspace/repo
+      - ./build:/workspace/build
+    working_dir: /workspace/repo
+    entrypoint: ["python3", "-m", "jetson_fw.cli"]
+    command: ["build", "configs/xavier-nx.yaml"]
+
+  flash:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    privileged: true
+    volumes:
+      - .:/workspace/repo
+      - ./build:/workspace/build
+      - /dev/bus/usb:/dev/bus/usb
+    working_dir: /workspace/repo
+    entrypoint: ["python3", "-m", "jetson_fw.cli"]
+    command: ["flash", "configs/xavier-nx.yaml", "--target", "xavier-nx"]
