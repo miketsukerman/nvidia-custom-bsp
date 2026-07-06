@@ -28,6 +28,9 @@ class AssembleRootfsStage(Stage):
             # nvidia-l4t-gputools postinst recreates this link without `ln -f`,
             # so a failed prior run leaves rootfs in a state that breaks retries.
             f"rm -f {rootfs_dir}/usr/local/bin/nvgpuswitch.py",
+            # nv-apply-debs.sh recreates these device nodes and only removes them
+            # after a successful run, so interrupted runs must scrub them first.
+            f"rm -f {rootfs_dir}/dev/random {rootfs_dir}/dev/urandom",
             f"cd {l4t_dir} && ./apply_binaries.sh",
         ]
         if context.config.rootfs.install_modules:

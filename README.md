@@ -108,4 +108,5 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - If a config path is rejected, ensure relative paths are relative to the YAML file.
 - If downloads fail verification, refresh the SHA256 values in the YAML instead of editing code.
 - Cached archives are still checksum-verified on every run; YAML checksum values remain authoritative even when archives are pre-seeded in `/workspace/build/downloads`.
+- If `assemble_rootfs` fails partway through `apply_binaries.sh`, rerunning the stage now scrubs stale `/dev/random` and `/dev/urandom` nodes left behind by the interrupted NVIDIA script before retrying.
 - If you want compose wrappers, use `docker compose run --rm validate`, `build`, or `flash`.
