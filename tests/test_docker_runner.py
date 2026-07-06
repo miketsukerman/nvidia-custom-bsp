@@ -65,4 +65,5 @@ def test_build_run_command_includes_mounts_and_devices(tmp_path: Path) -> None:
     assert f"{config.repo_root}:{runner.repo_mount}" in command
     assert "--privileged" not in command
     assert "/dev/bus/usb:/dev/bus/usb" in " ".join(command)
-    assert "bash" in command
+    assert "--entrypoint" in command
+    assert command[command.index("--entrypoint") + 1] == "bash"
