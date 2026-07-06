@@ -17,5 +17,5 @@ class ToolchainStage(Stage):
             f"mkdir -p {downloads} {toolchain_root}",
             f"wget -O {archive} {context.config.toolchain.url}",
             f"echo '{context.config.toolchain.sha256}  {archive}' | sha256sum -c -",
-            f"tar -xJf {archive} -C {toolchain_root} --strip-components=1",
+            f"tar -xf {archive} -C {toolchain_root} --strip-components=1",
         ]
