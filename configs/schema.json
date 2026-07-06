@@ -1,5 +1,44 @@
 {
   "$defs": {
+    "BspConfig": {
+      "additionalProperties": false,
+      "description": "Linux_for_Tegra customization options.",
+      "properties": {
+        "overlays": {
+          "description": "Files or directories copied into Linux_for_Tegra after extraction",
+          "items": {
+            "$ref": "#/$defs/BspOverlay"
+          },
+          "title": "Overlays",
+          "type": "array"
+        }
+      },
+      "title": "BspConfig",
+      "type": "object"
+    },
+    "BspOverlay": {
+      "additionalProperties": false,
+      "description": "Files or directories copied into Linux_for_Tegra before later stages.",
+      "properties": {
+        "src": {
+          "description": "Source file or directory path",
+          "format": "path",
+          "title": "Src",
+          "type": "string"
+        },
+        "dest": {
+          "description": "Absolute destination path within Linux_for_Tegra",
+          "title": "Dest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "src",
+        "dest"
+      ],
+      "title": "BspOverlay",
+      "type": "object"
+    },
     "DockerConfig": {
       "additionalProperties": false,
       "description": "Docker execution settings.",
@@ -81,7 +120,7 @@
       "properties": {
         "source_tag": {
           "default": "jetson_35.2.1",
-          "description": "Tag used with source_sync.sh -t",
+          "description": "Kernel/device-tree tag used for the filtered source_sync.sh kernel sync",
           "title": "Source Tag",
           "type": "string"
         },
@@ -353,6 +392,9 @@
     },
     "rootfs": {
       "$ref": "#/$defs/RootfsConfig"
+    },
+    "bsp": {
+      "$ref": "#/$defs/BspConfig"
     },
     "targets": {
       "description": "Jetson targets sharing the same kernel and rootfs build",

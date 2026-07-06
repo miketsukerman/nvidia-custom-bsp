@@ -36,6 +36,7 @@ BASE: dict[str, Any] = {
     "workspace": {"root": "/workspace/build", "keep_intermediate": True},
     "kernel": {"source_tag": "jetson_35.2.1", "defconfig": "tegra_defconfig"},
     "rootfs": {"install_modules": True, "extra_packages": [], "overlays": []},
+    "bsp": {"overlays": []},
     "targets": [
         {
             "name": "xavier-nx",
@@ -75,5 +76,12 @@ def test_invalid_volume_rejected() -> None:
     invalid = dict(BASE)
     invalid["docker"] = dict(BASE["docker"])
     invalid["docker"]["volumes"] = ["broken-volume"]
+    with pytest.raises(ValidationError):
+        BuildConfig.model_validate(invalid)
+
+
+def test_invalid_bsp_overlay_destination_rejected() -> None:
+    invalid = dict(BASE)
+    invalid["bsp"] = {"overlays": [{"src": "/tmp/bootloader.dtb", "dest": "bootloader/dtb"}]}
     with pytest.raises(ValidationError):
         BuildConfig.model_validate(invalid)

@@ -10,7 +10,7 @@ ESCAPED_PROMETHEUS_DTS_SOURCE = PROMETHEUS_DTS_SOURCE.replace("/", r"\/")
 
 class SourceSyncStage(Stage):
     name = "source_sync"
-    dependencies = ("fetch_bsp",)
+    dependencies = ("customize_bsp",)
 
     def commands(self, context: StageContext) -> list[str]:
         l4t_dir = context.workspace / "Linux_for_Tegra"

@@ -226,6 +226,35 @@ class RootfsConfig(BaseModel):
     )
 
 
+class BspOverlay(BaseModel):
+    """Files or directories copied into Linux_for_Tegra before later stages."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    src: Path = Field(description="Source file or directory path")
+    dest: str = Field(description="Absolute destination path within Linux_for_Tegra")
+
+    @field_validator("dest")
+    @classmethod
+    def validate_dest(cls, value: str) -> str:
+        if not value.startswith("/"):
+            raise ValueError("must be an absolute Linux_for_Tegra path starting with '/'")
+        if ".." in Path(value).parts:
+            raise ValueError("must not contain parent-directory traversal")
+        return value
+
+
+class BspConfig(BaseModel):
+    """Linux_for_Tegra customization options."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    overlays: list[BspOverlay] = Field(
+        default_factory=list,
+        description="Files or directories copied into Linux_for_Tegra after extraction",
+    )
+
+
 class TargetConfig(BaseModel):
     """Per-target flashing options."""
 
@@ -252,6 +281,7 @@ class BuildConfig(BaseModel):
     workspace: WorkspaceConfig = Field(default_factory=WorkspaceConfig)
     kernel: KernelConfig = Field(default_factory=KernelConfig)
     rootfs: RootfsConfig = Field(default_factory=RootfsConfig)
+    bsp: BspConfig = Field(default_factory=BspConfig)
     targets: list[TargetConfig] = Field(
         min_length=1,
         description="Jetson targets sharing the same kernel and rootfs build",

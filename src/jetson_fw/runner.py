@@ -7,6 +7,7 @@ from jetson_fw.docker.runner import DockerRunner
 from jetson_fw.stages.assemble_rootfs import AssembleRootfsStage
 from jetson_fw.stages.base import Stage, StageContext
 from jetson_fw.stages.build_kernel import BuildKernelStage
+from jetson_fw.stages.customize_bsp import CustomizeBspStage
 from jetson_fw.stages.fetch_bsp import FetchBspStage
 from jetson_fw.stages.flash import FlashStage
 from jetson_fw.stages.source_sync import SourceSyncStage
@@ -24,6 +25,7 @@ class BuildRunner:
         self.stages: dict[str, Stage] = {
             "fetch_bsp": FetchBspStage(),
             "toolchain": ToolchainStage(),
+            "customize_bsp": CustomizeBspStage(),
             "source_sync": SourceSyncStage(),
             "build_kernel": BuildKernelStage(),
             "assemble_rootfs": AssembleRootfsStage(),

@@ -45,6 +45,9 @@ rootfs:
     - src: "../fixtures/overlays/etc"
       dest: "/etc"
 
+bsp:
+  overlays: []
+
 targets:
   - name: "xavier-nx"
     module: "p3668"

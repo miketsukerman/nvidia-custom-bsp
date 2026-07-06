@@ -87,6 +87,15 @@ def _normalize_paths(data: dict[str, Any], base_dir: Path) -> dict[str, Any]:
         overlays.append(overlay_copy)
     rootfs["overlays"] = overlays
     normalized["rootfs"] = rootfs
+
+    bsp = dict(normalized.get("bsp", {}))
+    bsp_overlays: list[dict[str, Any]] = []
+    for overlay in bsp.get("overlays", []):
+        overlay_copy = dict(overlay)
+        overlay_copy["src"] = str(_to_absolute_host_path(overlay_copy["src"], base_dir))
+        bsp_overlays.append(overlay_copy)
+    bsp["overlays"] = bsp_overlays
+    normalized["bsp"] = bsp
     return normalized
 
 
