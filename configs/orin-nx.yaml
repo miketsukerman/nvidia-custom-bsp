@@ -45,6 +45,9 @@ rootfs:
     - src: "../fixtures/overlays/etc"
       dest: "/etc"
 
+bsp:
+  overlays: []
+
 targets:
   - name: "orin-nx"
     module: "p3767"

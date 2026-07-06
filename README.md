@@ -87,6 +87,9 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `extra_packages` (default empty)
 - `overlays` (default empty)
 
+### `bsp`
+- `overlays` (default empty): files or directories copied into the extracted `Linux_for_Tegra` tree after `fetch_bsp` and before `source_sync`, kernel build, and flash. Use this for bootloader DTB/BCT replacements that affect early boot device initialization.
+
 ### `targets`
 - `name` (required)
 - `module` (required enum: `p3668`, `p3767`)
@@ -99,6 +102,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `validate` runs on the host and does not require Docker.
 - `image` runs `docker build` or `docker pull` using the YAML `docker` section.
 - `build`, `flash`, and `all` run inside the builder image and bind-mount the repository plus configured volumes.
+- `bsp.overlays` are applied inside `Linux_for_Tegra` before source sync and flashing, so they can override NVIDIA bootloader config files such as MB1 BCTs or bootloader DTBs.
 - Flashing adds `--privileged` or USB device passthrough mounts.
 - Download archives in `/workspace/build/downloads` are treated as a reusable cache for BSP, sample rootfs, and toolchain artifacts.
 
@@ -107,6 +111,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - If `flash.sh` cannot see the Jetson in recovery mode, confirm `/dev/bus/usb` is exposed and retry with `privileged_for_flash: true`.
 - If a config path is rejected, ensure relative paths are relative to the YAML file.
 - If downloads fail verification, refresh the SHA256 values in the YAML instead of editing code.
+- If recovery boot fails before Linux starts with messages such as `DEVICE_PROD`, `tegrabl_tca9539_init`, or `Failed to initialize device 1-3`, make sure the required bootloader DT/BCT files are provided via `bsp.overlays`; kernel DTS changes alone are too late for those failures.
 - Cached archives are still checksum-verified on every run; YAML checksum values remain authoritative even when archives are pre-seeded in `/workspace/build/downloads`.
 - If `assemble_rootfs` fails partway through `apply_binaries.sh`, rerunning the stage now scrubs stale `/dev/random` and `/dev/urandom` nodes left behind by the interrupted NVIDIA script before retrying.
 - If you use a custom builder image and enable `rootfs.install_modules`, make sure the image includes `depmod` (provided by the `kmod` package) so `make modules_install` can generate module dependency metadata without warnings.

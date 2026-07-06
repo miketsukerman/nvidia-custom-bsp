@@ -19,11 +19,13 @@ def test_load_config_expands_relative_paths(
     fixture_dir = repo_root / "fixtures"
     (fixture_dir / "configs").mkdir(parents=True)
     (fixture_dir / "dts").mkdir(parents=True)
+    (fixture_dir / "bootloader").mkdir(parents=True)
     (fixture_dir / "overlays" / "etc").mkdir(parents=True)
     (repo_root / "docker").mkdir()
     (repo_root / "docker" / "Dockerfile").write_text("FROM ubuntu:20.04\n", encoding="utf-8")
     (fixture_dir / "configs" / "enable-can.config").write_text("", encoding="utf-8")
     (fixture_dir / "dts" / "board.dts").write_text("", encoding="utf-8")
+    (fixture_dir / "bootloader" / "kernel_tegra194-p3668.dtb").write_text("", encoding="utf-8")
     (fixture_dir / "overlays" / "etc" / "motd").write_text("hi\n", encoding="utf-8")
     config_dir.mkdir()
     monkeypatch.setenv("JOBS", "12")
@@ -63,6 +65,10 @@ rootfs:
   overlays:
     - src: ../fixtures/overlays/etc
       dest: /etc
+bsp:
+  overlays:
+    - src: ../fixtures/bootloader/kernel_tegra194-p3668.dtb
+      dest: /bootloader/kernel_tegra194-p3668.dtb
 targets:
   - name: xavier-nx
     module: p3668
@@ -78,6 +84,7 @@ targets:
     assert config.docker.dockerfile.is_absolute()
     assert config.kernel.config_fragments[0].is_absolute()
     assert config.rootfs.overlays[0].src.is_absolute()
+    assert config.bsp.overlays[0].src.is_absolute()
     assert config.repo_root == repo_root
 
 
