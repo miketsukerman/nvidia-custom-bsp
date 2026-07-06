@@ -18,6 +18,8 @@ class BuildKernelStage(Stage):
             f"export CROSS_COMPILE={context.workspace}/toolchain/bin/{context.config.toolchain.cross_compile_prefix}",
             "export ARCH=arm64",
         ]
+        if context.config.kernel.extra_dts:
+            commands.append(f"mkdir -p {source_dir}/arch/arm64/boot/dts")
         for dts in context.config.kernel.extra_dts:
             commands.append(f"cp {context.repo_path(dts)} {source_dir}/arch/arm64/boot/dts/")
         commands.append(f"make -C {source_dir} O={out_dir} {context.config.kernel.defconfig}")
