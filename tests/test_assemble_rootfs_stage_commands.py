@@ -77,6 +77,7 @@ def test_assemble_rootfs_installs_modules_from_synced_kernel_tree(tmp_path: Path
     out_dir = "/workspace/build/out/kernel"
 
     assert AssembleRootfsStage().commands(context) == [
+        f"rm -f {rootfs_dir}/usr/local/bin/nvgpuswitch.py",
         f"cd {l4t_dir} && ./apply_binaries.sh",
         f"make -C {kernel_source} O={out_dir} modules_install INSTALL_MOD_PATH={rootfs_dir}",
     ]

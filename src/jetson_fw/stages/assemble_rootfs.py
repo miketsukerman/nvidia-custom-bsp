@@ -14,7 +14,12 @@ class AssembleRootfsStage(Stage):
         rootfs_dir = l4t_dir / "rootfs"
         kernel_source = context.kernel_source_dir
         out_dir = context.workspace / "out" / "kernel"
-        commands = [f"cd {l4t_dir} && ./apply_binaries.sh"]
+        commands = [
+            # nvidia-l4t-gputools postinst recreates this link without `ln -f`,
+            # so a failed prior run leaves rootfs in a state that breaks retries.
+            f"rm -f {rootfs_dir}/usr/local/bin/nvgpuswitch.py",
+            f"cd {l4t_dir} && ./apply_binaries.sh",
+        ]
         if context.config.rootfs.install_modules:
             commands.append(
                 f"make -C {kernel_source} O={out_dir} modules_install INSTALL_MOD_PATH={rootfs_dir}"
