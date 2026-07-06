@@ -15,7 +15,7 @@ class ToolchainStage(Stage):
         toolchain_root = context.workspace / "toolchain"
         return [
             f"mkdir -p {downloads} {toolchain_root}",
-            f"wget -O {archive} {context.config.toolchain.url}",
+            f"if [ ! -f {archive} ]; then wget -O {archive} {context.config.toolchain.url}; fi",
             f"echo '{context.config.toolchain.sha256}  {archive}' | sha256sum -c -",
             f"tar -xf {archive} -C {toolchain_root} --strip-components=1",
         ]

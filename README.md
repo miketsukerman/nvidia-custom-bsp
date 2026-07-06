@@ -94,10 +94,12 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `image` runs `docker build` or `docker pull` using the YAML `docker` section.
 - `build`, `flash`, and `all` run inside the builder image and bind-mount the repository plus configured volumes.
 - Flashing adds `--privileged` or USB device passthrough mounts.
+- Download archives in `/workspace/build/downloads` are treated as a reusable cache for BSP, sample rootfs, and toolchain artifacts.
 
 ## Troubleshooting
 
 - If `flash.sh` cannot see the Jetson in recovery mode, confirm `/dev/bus/usb` is exposed and retry with `privileged_for_flash: true`.
 - If a config path is rejected, ensure relative paths are relative to the YAML file.
 - If downloads fail verification, refresh the SHA256 values in the YAML instead of editing code.
+- Cached archives are still checksum-verified on every run; YAML checksum values remain authoritative even when archives are pre-seeded in `/workspace/build/downloads`.
 - If you want compose wrappers, use `docker compose run --rm validate`, `build`, or `flash`.
