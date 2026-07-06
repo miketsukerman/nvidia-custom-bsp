@@ -18,26 +18,26 @@ pip install -e .
 Validate the example configs on the host:
 
 ```bash
-jetson-fw validate /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/xavier-nx.yaml --schema-out /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/schema.json
-jetson-fw validate /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/orin-nx.yaml
+jetson-fw validate configs/xavier-nx.yaml --schema-out configs/schema.json
+jetson-fw validate configs/orin-nx.yaml
 ```
 
 Build or pull the container image:
 
 ```bash
-jetson-fw image /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/xavier-nx.yaml
+jetson-fw image configs/xavier-nx.yaml
 ```
 
 Preview the Docker invocation and inner L4T commands:
 
 ```bash
-jetson-fw build /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/xavier-nx.yaml --dry-run
+jetson-fw build configs/xavier-nx.yaml --dry-run
 ```
 
 Flash a board with USB passthrough:
 
 ```bash
-jetson-fw flash /home/runner/work/nvidia-custom-bsp/nvidia-custom-bsp/configs/xavier-nx.yaml --target xavier-nx
+jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 ```
 
 ## YAML Reference
