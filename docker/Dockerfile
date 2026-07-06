@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     device-tree-compiler \
     ca-certificates \
     xz-utils \
+    xxd \
     cpio \
     rsync \
     file \

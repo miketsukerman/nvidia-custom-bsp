@@ -12,7 +12,7 @@ class AssembleRootfsStage(Stage):
     def commands(self, context: StageContext) -> list[str]:
         l4t_dir = context.workspace / "Linux_for_Tegra"
         rootfs_dir = l4t_dir / "rootfs"
-        kernel_source = l4t_dir / "source" / "public" / "kernel" / "kernel-5.10"
+        kernel_source = context.kernel_source_dir
         out_dir = context.workspace / "out" / "kernel"
         context.logger.debug(
             "assemble_rootfs.context "
@@ -24,7 +24,12 @@ class AssembleRootfsStage(Stage):
             f"extra_packages_count={len(context.config.rootfs.extra_packages)} "
             f"overlay_count={len(context.config.rootfs.overlays)}"
         )
-        commands = [f"cd {l4t_dir} && ./apply_binaries.sh"]
+        commands = [
+            # nvidia-l4t-gputools postinst recreates this link without `ln -f`,
+            # so a failed prior run leaves rootfs in a state that breaks retries.
+            f"rm -f {rootfs_dir}/usr/local/bin/nvgpuswitch.py",
+            f"cd {l4t_dir} && ./apply_binaries.sh",
+        ]
         if context.config.rootfs.install_modules:
             commands.append(
                 f"make -C {kernel_source} O={out_dir} modules_install INSTALL_MOD_PATH={rootfs_dir}"

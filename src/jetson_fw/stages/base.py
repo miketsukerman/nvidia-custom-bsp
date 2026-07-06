@@ -27,6 +27,10 @@ class StageContext:
         return self.config.workspace.root
 
     @property
+    def kernel_source_dir(self) -> Path:
+        return self.workspace / "Linux_for_Tegra" / "sources" / "kernel" / "kernel-5.10"
+
+    @property
     def state_dir(self) -> Path:
         return self.workspace / ".state"
 
