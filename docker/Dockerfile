@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     bc \
     git \
     wget \
+    kmod \
     libncurses-dev \
     flex \
     bison \

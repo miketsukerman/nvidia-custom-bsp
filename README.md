@@ -109,4 +109,5 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - If downloads fail verification, refresh the SHA256 values in the YAML instead of editing code.
 - Cached archives are still checksum-verified on every run; YAML checksum values remain authoritative even when archives are pre-seeded in `/workspace/build/downloads`.
 - If `assemble_rootfs` fails partway through `apply_binaries.sh`, rerunning the stage now scrubs stale `/dev/random` and `/dev/urandom` nodes left behind by the interrupted NVIDIA script before retrying.
+- If you use a custom builder image and enable `rootfs.install_modules`, make sure the image includes `depmod` (provided by the `kmod` package) so `make modules_install` can generate module dependency metadata without warnings.
 - If you want compose wrappers, use `docker compose run --rm validate`, `build`, or `flash`.
