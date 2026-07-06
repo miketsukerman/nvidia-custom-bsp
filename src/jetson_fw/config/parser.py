@@ -62,7 +62,9 @@ def _normalize_paths(data: dict[str, Any], base_dir: Path) -> dict[str, Any]:
     docker = dict(normalized.get("docker", {}))
     if "dockerfile" in docker:
         docker["dockerfile"] = str(_to_absolute_host_path(docker["dockerfile"], base_dir))
-    docker["volumes"] = [_normalize_volume(volume, base_dir) for volume in docker.get("volumes", [])]
+    docker["volumes"] = [
+        _normalize_volume(volume, base_dir) for volume in docker.get("volumes", [])
+    ]
     docker["devices"] = [
         str(_to_absolute_host_path(device, base_dir)) for device in docker.get("devices", [])
     ]

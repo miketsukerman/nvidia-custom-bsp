@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
 from jetson_fw.config.model import BuildConfig, export_schema
 
-BASE = {
+BASE: dict[str, Any] = {
     "version": 1,
     "docker": {
         "image": "builder:latest",

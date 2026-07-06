@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 from jetson_fw.config.model import BuildConfig
 from jetson_fw.utils.shell import ShellRunner

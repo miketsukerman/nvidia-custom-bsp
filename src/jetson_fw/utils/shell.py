@@ -5,9 +5,9 @@ from __future__ import annotations
 import os
 import shlex
 import subprocess
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Sequence
 
 from .logging import Logger, get_logger
 

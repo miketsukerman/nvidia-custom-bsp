@@ -7,7 +7,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    HttpUrl,
+    PrivateAttr,
+    field_validator,
+    model_validator,
+)
 
 
 class ModuleEnum(str, Enum):
@@ -109,7 +117,7 @@ class DockerConfig(BaseModel):
         return values
 
     @model_validator(mode="after")
-    def validate_flash_settings(self) -> "DockerConfig":
+    def validate_flash_settings(self) -> DockerConfig:
         if not self.privileged_for_flash and not self.devices:
             raise ValueError("docker.devices must be set when privileged_for_flash is false")
         return self
@@ -156,7 +164,9 @@ class WorkspaceConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    root: Path = Field(default=Path("/workspace/build"), description="Workspace root inside container")
+    root: Path = Field(
+        default=Path("/workspace/build"), description="Workspace root inside container"
+    )
     keep_intermediate: bool = Field(default=True, description="Keep intermediate artifacts")
 
     @field_validator("root")
@@ -222,7 +232,9 @@ class TargetConfig(BaseModel):
     module: ModuleEnum = Field(description="Jetson module identifier")
     flash_config: FlashConfigEnum = Field(description="flash.sh board configuration name")
     root_device: RootDeviceEnum = Field(description="flash.sh root device argument")
-    enabled: bool = Field(default=True, description="Whether target is active for build/all commands")
+    enabled: bool = Field(
+        default=True, description="Whether target is active for build/all commands"
+    )
 
 
 class BuildConfig(BaseModel):
@@ -254,13 +266,16 @@ class BuildConfig(BaseModel):
         return targets
 
     @model_validator(mode="after")
-    def validate_target_compatibility(self) -> "BuildConfig":
+    def validate_target_compatibility(self) -> BuildConfig:
         target_names: set[str] = set()
         for target in self.targets:
             if target.name in target_names:
                 raise ValueError(f"duplicate target name '{target.name}'")
             target_names.add(target.name)
-            if target.module == ModuleEnum.ORIN_NX and target.flash_config != FlashConfigEnum.ORIN_NANO_DEVKIT:
+            if (
+                target.module == ModuleEnum.ORIN_NX
+                and target.flash_config != FlashConfigEnum.ORIN_NANO_DEVKIT
+            ):
                 raise ValueError(
                     "Orin NX module p3767 must use flash_config 'jetson-orin-nano-devkit' on R35.2.1"
                 )

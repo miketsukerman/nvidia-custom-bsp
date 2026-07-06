@@ -8,9 +8,13 @@ from jetson_fw.config.errors import ConfigLoadError, ConfigValidationError
 from jetson_fw.config.parser import load_config
 
 
-def test_load_config_expands_relative_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_load_config_expands_relative_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo_root = tmp_path
-    (repo_root / "pyproject.toml").write_text('[project]\nname = "x"\nversion = "0.0.0"\n', encoding="utf-8")
+    (repo_root / "pyproject.toml").write_text(
+        '[project]\nname = "x"\nversion = "0.0.0"\n', encoding="utf-8"
+    )
     config_dir = repo_root / "configs"
     fixture_dir = repo_root / "fixtures"
     (fixture_dir / "configs").mkdir(parents=True)
