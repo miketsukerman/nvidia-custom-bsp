@@ -61,7 +61,7 @@ class DockerRunner:
                     command.extend(["-v", f"{device_str}:{device_str}"])
                 else:
                     command.extend(["--device", f"{device_str}:{device_str}"])
-        command.extend([image_reference(self.config), "bash", "-lc", inner_command])
+        command.extend(["--entrypoint", "bash", image_reference(self.config), "-lc", inner_command])
         return command
 
     def run(
