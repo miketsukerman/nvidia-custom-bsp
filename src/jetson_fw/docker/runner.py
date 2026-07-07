@@ -98,6 +98,7 @@ class DockerRunner:
         """Run a sequence of shell commands inside the container, one at a time."""
         total = len(commands)
         for index, cmd in enumerate(commands):
+            self.shell.logger.update_status(f"command {index + 1}/{total}: {cmd[:80]}")
             self.shell.logger.debug(f"docker.command_start index={index} total={total}")
             self.run(cmd, flash=flash, dry_run=dry_run, extra_env=extra_env)
             self.shell.logger.debug(f"docker.command_end index={index} total={total}")

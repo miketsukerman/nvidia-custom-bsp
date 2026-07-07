@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import StringIO
+from unittest.mock import MagicMock
 
 import pytest
 from rich.console import Console
@@ -38,7 +39,7 @@ def test_shell_runner_preserves_bracketed_stderr_output() -> None:
         "-c",
         (
             "import sys; "
-            "sys.stderr.write(\"[/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10/arch/arm64/boot/dts/Makefile:96: dtbs]\\n\"); "
+            'sys.stderr.write("[/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10/arch/arm64/boot/dts/Makefile:96: dtbs]\\n"); '
             "raise SystemExit(2)"
         ),
     ]
@@ -50,3 +51,59 @@ def test_shell_runner_preserves_bracketed_stderr_output() -> None:
         "[/workspace/build/Linux_for_Tegra/sources/kernel/kernel-5.10/arch/arm64/boot/dts/Makefile:96: dtbs]"
         in buffer.getvalue()
     )
+
+
+def test_status_context_manager_normal_mode() -> None:
+    buffer = StringIO()
+    logger = make_logger(buffer, verbose=False, quiet=False)
+
+    assert logger._active_status is None
+    entered: list[bool] = []
+    with logger.status("doing work"):
+        # spinner is active inside the context
+        active = logger._active_status
+        entered.append(active is not None)
+        # update_status delegates to the live spinner (not to info)
+        assert active is not None
+        mock_update = MagicMock()
+        active.update = mock_update
+        logger._active_status = active
+        logger.update_status("step 1")
+        mock_update.assert_called_once_with("step 1")
+
+    assert entered == [True]
+    assert logger._active_status is None
+    # no plain-text output was emitted by status() itself
+    assert buffer.getvalue() == ""
+
+
+def test_status_context_manager_quiet_mode() -> None:
+    buffer = StringIO()
+    logger = make_logger(buffer, verbose=False, quiet=True)
+
+    with logger.status("doing work"):
+        assert logger._active_status is None
+
+    assert logger._active_status is None
+    assert buffer.getvalue() == ""
+
+
+def test_status_context_manager_verbose_mode() -> None:
+    buffer = StringIO()
+    logger = make_logger(buffer, verbose=True, quiet=False)
+
+    with logger.status("doing work"):
+        assert logger._active_status is None
+
+    assert logger._active_status is None
+    assert "doing work" in buffer.getvalue()
+
+
+def test_update_status_without_active_status_falls_through_to_info() -> None:
+    buffer = StringIO()
+    logger = make_logger(buffer, verbose=False, quiet=False)
+
+    assert logger._active_status is None
+    logger.update_status("fallback message")
+
+    assert "fallback message" in buffer.getvalue()
