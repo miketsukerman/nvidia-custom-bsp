@@ -33,7 +33,7 @@ class BuildKernelStage(Stage):
         for dts in context.config.kernel.extra_dts:
             commands.append(f"cp {context.repo_path(dts)} {source_dir}/arch/arm64/boot/dts/")
         commands.append(
-            f"cd {source_dir} && make {make_vars} O={out_dir} {context.config.kernel.defconfig}"
+            f"make -C {source_dir} {make_vars} O={out_dir} {context.config.kernel.defconfig}"
         )
         if context.config.kernel.config_fragments:
             fragments = " ".join(
@@ -41,9 +41,9 @@ class BuildKernelStage(Stage):
                 for fragment in context.config.kernel.config_fragments
             )
             commands.append(
-                f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh -O {out_dir} {out_dir}/.config {fragments}"
+                f"{make_vars} {source_dir}/scripts/kconfig/merge_config.sh -O {out_dir} {out_dir}/.config {fragments}"
             )
         commands.append(
-            f"cd {source_dir} && make {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"
+            f"make -C {source_dir} {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"
         )
         return commands
