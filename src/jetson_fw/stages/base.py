@@ -72,13 +72,11 @@ class Stage(ABC):
             f"target={context.target.name if context.target else 'none'}"
         )
         self.validate(context)
-        inner = " && ".join(
-            [
-                f"mkdir -p {context.state_dir}",
-                *self.commands(context),
-                f"touch {marker}",
-            ]
-        )
-        context.logger.debug(f"stage.commands name={self.name} count={len(inner.split(' && '))}")
-        context.docker.run(inner, flash=self.name == "flash", dry_run=context.dry_run)
+        commands = [
+            f"mkdir -p {context.state_dir}",
+            *self.commands(context),
+            f"touch {marker}",
+        ]
+        context.logger.debug(f"stage.commands name={self.name} count={len(commands)}")
+        context.docker.run_commands(commands, flash=self.name == "flash", dry_run=context.dry_run)
         context.logger.debug(f"stage.end name={self.name} marker={marker}")
