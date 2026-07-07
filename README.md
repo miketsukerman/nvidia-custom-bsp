@@ -106,7 +106,64 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - Flashing adds `--privileged` or USB device passthrough mounts.
 - Download archives in `/workspace/build/downloads` are treated as a reusable cache for BSP, sample rootfs, and toolchain artifacts.
 
-## Troubleshooting
+## Sudo-less flashing
+
+By default, `flash.sh` needs root to access the Jetson USB recovery device
+(VID `0x0955`).  A udev rule can grant a normal user in the **plugdev** group
+direct USB access, eliminating the need for sudo during the flashing step.
+
+### 1. Install the udev rule
+
+```bash
+sudo jetson-fw install-udev-rules
+```
+
+This copies `99-tegra-devices.rules` to `/etc/udev/rules.d/` and runs
+`udevadm control --reload-rules && udevadm trigger`.  You can preview what it
+would do with `--dry-run`:
+
+```bash
+jetson-fw install-udev-rules --dry-run
+```
+
+To install to a custom directory (e.g. for testing):
+
+```bash
+sudo jetson-fw install-udev-rules --dest-dir /run/udev/rules.d
+```
+
+### 2. Add your user to the plugdev group
+
+```bash
+sudo usermod -aG plugdev $USER
+```
+
+Log out and back in (or run `newgrp plugdev` in the current shell) for the
+group change to take effect.
+
+### 3. Plug the board in Force Recovery Mode
+
+Connect the Jetson via USB and boot it into Force Recovery Mode.  Verify the
+device appears without sudo:
+
+```bash
+lsusb | grep 0955
+```
+
+You should now be able to run `jetson-fw flash` without root.
+
+### Remaining privilege need
+
+Even with the udev rule in place, the `assemble_rootfs` stage uses `losetup`,
+`mount`, and `umount` (via NVIDIA's `apply_binaries.sh`) to build
+`system.img`.  Those operations still require root or the appropriate Linux
+capabilities.  The udev rule only removes the need for root during the USB
+flashing step.
+
+The `flash` command automatically runs a preflight check and emits warnings if
+the rule is missing or the user is not in `plugdev`.
+
+
 
 - If `flash.sh` cannot see the Jetson in recovery mode, confirm `/dev/bus/usb` is exposed and retry with `privileged_for_flash: true`.
 - If a config path is rejected, ensure relative paths are relative to the YAML file.

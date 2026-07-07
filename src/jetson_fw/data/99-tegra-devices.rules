@@ -1,0 +1,15 @@
+# 99-tegra-devices.rules
+#
+# Grants non-root users in the "plugdev" group read/write access to NVIDIA
+# Tegra recovery-mode USB devices (VID 0x0955).  Install this file so that
+# flash.sh can communicate with the board without requiring sudo.
+#
+# Covered boards / Tegra SoCs:
+#   - Jetson Xavier NX  (Tegra194, PID 0x7020 / 0x7c18)
+#   - Jetson Orin NX    (Tegra234, PID 0x7323 / 0x7523)
+#
+# The vendor-wide rule (idVendor=="0955") is intentionally kept as the single
+# active rule so that both current and future Tegra recovery devices are
+# matched without requiring rule updates for each new PID.
+#
+SUBSYSTEM=="usb", ATTR{idVendor}=="0955", MODE="0664", GROUP="plugdev"

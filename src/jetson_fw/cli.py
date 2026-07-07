@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from jetson_fw import udev as _udev
 from jetson_fw.config.model import export_schema
 from jetson_fw.config.parser import load_config
 from jetson_fw.docker.image import ensure_image
@@ -85,11 +87,49 @@ def flash(
     """Flash a specific board target inside Docker."""
 
     logger = _logger(verbose, quiet)
+    _udev.preflight_check(logger)
     build_config = load_config(config)
     shell = ShellRunner(logger)
     runner = BuildRunner(build_config, DockerRunner(build_config, shell), logger)
     runner.run_flash(build_config.get_target(target), dry_run=dry_run, force=force)
     logger.success(f"Flash workflow completed for {target}.")
+
+
+@app.command(name="install-udev-rules")
+def install_udev_rules_cmd(
+    dest_dir: Annotated[Path, typer.Option("--dest-dir")] = Path("/etc/udev/rules.d"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+    verbose: bool = False,
+    quiet: bool = False,
+) -> None:
+    """Install udev rules for sudo-less Jetson USB flashing.
+
+    Copies 99-tegra-devices.rules to DEST_DIR (default /etc/udev/rules.d) and
+    reloads udev so the rule takes effect immediately.  Writing to the default
+    destination requires root; run this command with sudo.
+
+    After installation, add your user to the plugdev group if not already a
+    member, then log out and back in:
+
+        sudo usermod -aG plugdev $USER
+    """
+    logger = _logger(verbose, quiet)
+    shell = ShellRunner(logger)
+    src = _udev.rules_source()
+    dest = dest_dir / _udev.RULES_FILENAME
+    if dry_run:
+        logger.info(f"[dry-run] Would copy {src} -> {dest}")
+        logger.info("[dry-run] Would run: udevadm control --reload-rules")
+        logger.info("[dry-run] Would run: udevadm trigger")
+    else:
+        _udev.install_rules(dest_dir, shell=shell, logger=logger)
+    if not _udev.check_plugdev_membership():
+        username = os.getenv("USER") or os.getenv("LOGNAME") or "<user>"
+        logger.warning(
+            f"User '{username}' is not in the 'plugdev' group. "
+            f"Run 'sudo usermod -aG plugdev {username}' then log out and back in."
+        )
+    logger.success("udev rules installed.")
 
 
 @app.command(name="all")
