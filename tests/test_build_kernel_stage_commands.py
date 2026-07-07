@@ -85,9 +85,9 @@ def test_build_kernel_passes_arch_and_cross_compile_to_make(tmp_path: Path) -> N
 
     cmds = BuildKernelStage().commands(context)
 
-    assert f"cd {source_dir} && make {make_vars} O={out_dir} tegra_defconfig" in cmds
+    assert f"make -C {source_dir} {make_vars} O={out_dir} tegra_defconfig" in cmds
     assert (
-        f"cd {source_dir} && make {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"
+        f"make -C {source_dir} {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"
         in cmds
     )
 
@@ -140,7 +140,7 @@ def test_build_kernel_with_config_fragment(tmp_path: Path) -> None:
     assert any(
         c
         == (
-            f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
+            f"{make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
             f"-O /workspace/build/out/kernel /workspace/build/out/kernel/.config {expected_container_frag}"
         )
         for c in cmds

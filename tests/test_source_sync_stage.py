@@ -69,10 +69,8 @@ def test_source_sync_stage_uses_kernel_only_mode(tmp_path: Path) -> None:
     escaped_source = PROMETHEUS_DTS_SOURCE.replace("/", r"\/")
 
     assert SourceSyncStage().commands(context) == [
-        "cd /workspace/build/Linux_for_Tegra",
-        "tmp_script=$(mktemp ./source_sync.filtered.XXXXXX.sh)",
-        "trap 'rm -f \"$tmp_script\"' EXIT",
-        f"sed '/{escaped_source}/d' ./source_sync.sh > \"$tmp_script\"",
-        'chmod +x "$tmp_script"',
-        '"$tmp_script" -k jetson_35.2.1',
+        f"sed '/{escaped_source}/d' /workspace/build/Linux_for_Tegra/source_sync.sh > /workspace/build/Linux_for_Tegra/source_sync.filtered.sh",
+        "chmod +x /workspace/build/Linux_for_Tegra/source_sync.filtered.sh",
+        "/workspace/build/Linux_for_Tegra/source_sync.filtered.sh -k jetson_35.2.1",
+        "rm -f /workspace/build/Linux_for_Tegra/source_sync.filtered.sh",
     ]
