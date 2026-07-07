@@ -46,9 +46,10 @@ class BuildRunner:
             f"build.context workspace={context.workspace} state_dir={context.state_dir} "
             f"dry_run={dry_run} force={force}"
         )
-        for name in ordered:
-            self.logger.info(f"Running stage: {name}")
-            self.stages[name].run(context)
+        total = len(ordered)
+        for i, name in enumerate(ordered):
+            with self.logger.status(f"Stage {i + 1}/{total} \u2014 {name}"):
+                self.stages[name].run(context)
 
     def run_flash(
         self, target: TargetConfig, *, dry_run: bool = False, force: bool = False
@@ -71,9 +72,10 @@ class BuildRunner:
             f"flash.context workspace={context.workspace} state_dir={context.state_dir} "
             f"dry_run={dry_run} force={force}"
         )
-        for name in ordered:
-            self.logger.info(f"Running stage: {name}")
-            self.stages[name].run(context)
+        total = len(ordered)
+        for i, name in enumerate(ordered):
+            with self.logger.status(f"Stage {i + 1}/{total} \u2014 {name}"):
+                self.stages[name].run(context)
 
     def run_all(self, *, dry_run: bool = False, force: bool = False) -> None:
         self.run_build(dry_run=dry_run, force=force)
