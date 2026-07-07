@@ -41,7 +41,8 @@ class BuildKernelStage(Stage):
                 for fragment in context.config.kernel.config_fragments
             )
             commands.append(
-                f"{make_vars} {source_dir}/scripts/kconfig/merge_config.sh -O {out_dir} {out_dir}/.config {fragments}"
+                f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
+                f"-O {out_dir} {out_dir}/.config {fragments}"
             )
         commands.append(
             f"make -C {source_dir} {make_vars} O={out_dir} Image dtbs modules -j${{JOBS:-$(nproc)}}"

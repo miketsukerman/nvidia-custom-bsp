@@ -140,7 +140,7 @@ def test_build_kernel_with_config_fragment(tmp_path: Path) -> None:
     assert any(
         c
         == (
-            f"{make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
+            f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh "
             f"-O /workspace/build/out/kernel /workspace/build/out/kernel/.config {expected_container_frag}"
         )
         for c in cmds
