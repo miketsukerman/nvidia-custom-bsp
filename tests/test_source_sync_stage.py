@@ -88,4 +88,7 @@ def test_source_sync_stage_uses_target_kernel_source_tag_override(tmp_path: Path
     )
 
     commands = SourceSyncStage().commands(context)
-    assert commands[2] == "/workspace/build/Linux_for_Tegra/source_sync.filtered.sh -k jetson_35.2.1-custom"
+    assert (
+        commands[2]
+        == "/workspace/build/Linux_for_Tegra/source_sync.filtered.sh -k jetson_35.2.1-custom"
+    )

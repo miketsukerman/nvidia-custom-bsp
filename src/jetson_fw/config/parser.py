@@ -107,7 +107,8 @@ def _normalize_paths(data: dict[str, Any], base_dir: Path) -> dict[str, Any]:
             for item in target_kernel.get("config_fragments", [])
         ]
         target_kernel["extra_dts"] = [
-            str(_to_absolute_host_path(item, base_dir)) for item in target_kernel.get("extra_dts", [])
+            str(_to_absolute_host_path(item, base_dir))
+            for item in target_kernel.get("extra_dts", [])
         ]
         if target_kernel:
             target_copy["kernel"] = target_kernel
