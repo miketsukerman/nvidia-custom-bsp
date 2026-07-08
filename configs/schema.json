@@ -105,15 +105,6 @@
       "title": "DockerConfig",
       "type": "object"
     },
-    "FlashConfigEnum": {
-      "description": "Supported L4T R35.2.1 flash configurations.",
-      "enum": [
-        "jetson-xavier-nx-devkit-emmc",
-        "jetson-orin-nano-devkit"
-      ],
-      "title": "FlashConfigEnum",
-      "type": "string"
-    },
     "KernelConfig": {
       "additionalProperties": false,
       "description": "Kernel build options.",
@@ -269,6 +260,30 @@
       "title": "RootfsOverlay",
       "type": "object"
     },
+    "TargetBspConfig": {
+      "additionalProperties": false,
+      "description": "Per-target Linux_for_Tegra overrides.",
+      "properties": {
+        "overlays": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BspOverlay"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional additional files or directories copied into Linux_for_Tegra",
+          "title": "Overlays"
+        }
+      },
+      "title": "TargetBspConfig",
+      "type": "object"
+    },
     "TargetConfig": {
       "additionalProperties": false,
       "description": "Per-target flashing options.",
@@ -283,12 +298,49 @@
           "description": "Jetson module identifier"
         },
         "flash_config": {
-          "$ref": "#/$defs/FlashConfigEnum",
-          "description": "flash.sh board configuration name"
+          "description": "flash.sh board configuration name",
+          "title": "Flash Config",
+          "type": "string"
         },
         "root_device": {
           "$ref": "#/$defs/RootDeviceEnum",
           "description": "flash.sh root device argument"
+        },
+        "kernel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetKernelConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional per-target kernel overrides"
+        },
+        "rootfs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetRootfsConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional per-target rootfs overrides"
+        },
+        "bsp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetBspConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional per-target Linux_for_Tegra overrides"
         },
         "enabled": {
           "default": true,
@@ -304,6 +356,127 @@
         "root_device"
       ],
       "title": "TargetConfig",
+      "type": "object"
+    },
+    "TargetKernelConfig": {
+      "additionalProperties": false,
+      "description": "Per-target kernel overrides.",
+      "properties": {
+        "source_tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional kernel/device-tree source tag override for this target",
+          "title": "Source Tag"
+        },
+        "defconfig": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional kernel defconfig override for this target",
+          "title": "Defconfig"
+        },
+        "config_fragments": {
+          "anyOf": [
+            {
+              "items": {
+                "format": "path",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional additional kernel config fragments for this target",
+          "title": "Config Fragments"
+        },
+        "extra_dts": {
+          "anyOf": [
+            {
+              "items": {
+                "format": "path",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional additional custom DTS files for this target",
+          "title": "Extra Dts"
+        }
+      },
+      "title": "TargetKernelConfig",
+      "type": "object"
+    },
+    "TargetRootfsConfig": {
+      "additionalProperties": false,
+      "description": "Per-target rootfs overrides.",
+      "properties": {
+        "install_modules": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional override for installing kernel modules into rootfs",
+          "title": "Install Modules"
+        },
+        "extra_packages": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional additional apt packages for this target",
+          "title": "Extra Packages"
+        },
+        "overlays": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RootfsOverlay"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional additional files or directories copied into rootfs",
+          "title": "Overlays"
+        }
+      },
+      "title": "TargetRootfsConfig",
       "type": "object"
     },
     "ToolchainConfig": {

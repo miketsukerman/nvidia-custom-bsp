@@ -10,7 +10,7 @@ from jetson_fw.utils.logging import get_logger
 from jetson_fw.utils.shell import ShellRunner
 
 
-def build_config(tmp_path: Path) -> BuildConfig:
+def build_config(tmp_path: Path, *, target_kernel: dict[str, object] | None = None) -> BuildConfig:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     dockerfile = repo_root / "docker" / "Dockerfile"
@@ -50,6 +50,7 @@ def build_config(tmp_path: Path) -> BuildConfig:
                     "flash_config": "jetson-xavier-nx-devkit-emmc",
                     "root_device": "mmcblk0p1",
                     "enabled": True,
+                    **({"kernel": target_kernel} if target_kernel else {}),
                 }
             ],
         }
@@ -74,3 +75,17 @@ def test_source_sync_stage_uses_kernel_only_mode(tmp_path: Path) -> None:
         "/workspace/build/Linux_for_Tegra/source_sync.filtered.sh -k jetson_35.2.1",
         "rm -f /workspace/build/Linux_for_Tegra/source_sync.filtered.sh",
     ]
+
+
+def test_source_sync_stage_uses_target_kernel_source_tag_override(tmp_path: Path) -> None:
+    config = build_config(tmp_path, target_kernel={"source_tag": "jetson_35.2.1-custom"})
+    logger = get_logger()
+    context = StageContext(
+        config=config,
+        docker=DockerRunner(config, ShellRunner(logger)),
+        logger=logger,
+        target=config.targets[0],
+    )
+
+    commands = SourceSyncStage().commands(context)
+    assert commands[2] == "/workspace/build/Linux_for_Tegra/source_sync.filtered.sh -k jetson_35.2.1-custom"

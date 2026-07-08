@@ -10,7 +10,12 @@ from jetson_fw.utils.logging import get_logger
 from jetson_fw.utils.shell import ShellRunner
 
 
-def build_config(tmp_path: Path, *, overlays: list[dict[str, str]] | None = None) -> BuildConfig:
+def build_config(
+    tmp_path: Path,
+    *,
+    overlays: list[dict[str, str]] | None = None,
+    target_bsp: dict[str, object] | None = None,
+) -> BuildConfig:
     repo_root = tmp_path / "repo"
     repo_root.mkdir(exist_ok=True)
     dockerfile = repo_root / "docker" / "Dockerfile"
@@ -51,6 +56,7 @@ def build_config(tmp_path: Path, *, overlays: list[dict[str, str]] | None = None
                     "flash_config": "jetson-xavier-nx-devkit-emmc",
                     "root_device": "mmcblk0p1",
                     "enabled": True,
+                    **({"bsp": target_bsp} if target_bsp else {}),
                 }
             ],
         }
@@ -59,12 +65,13 @@ def build_config(tmp_path: Path, *, overlays: list[dict[str, str]] | None = None
     return config
 
 
-def make_context(config: BuildConfig) -> StageContext:
+def make_context(config: BuildConfig, *, with_target: bool = False) -> StageContext:
     logger = get_logger()
     return StageContext(
         config=config,
         docker=DockerRunner(config, ShellRunner(logger)),
         logger=logger,
+        target=config.targets[0] if with_target else None,
     )
 
 
@@ -116,3 +123,26 @@ def test_customize_bsp_stage_copies_file_overlays_into_l4t(tmp_path: Path) -> No
         "/workspace/repo/fixtures/bootloader/kernel_tegra194-p3668.dtb "
         "/workspace/build/Linux_for_Tegra/bootloader/kernel_tegra194-p3668.dtb"
     ]
+
+
+def test_customize_bsp_stage_includes_target_overlays(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    shared_file = repo_root / "fixtures" / "bootloader" / "shared.dtb"
+    target_file = repo_root / "fixtures" / "bootloader" / "air020.dtb"
+    shared_file.parent.mkdir(parents=True)
+    shared_file.write_text("", encoding="utf-8")
+    target_file.write_text("", encoding="utf-8")
+    config = build_config(
+        tmp_path,
+        overlays=[{"src": str(shared_file), "dest": "/bootloader/shared.dtb"}],
+        target_bsp={"overlays": [{"src": str(target_file), "dest": "/bootloader/air020.dtb"}]},
+    )
+
+    commands = CustomizeBspStage().commands(make_context(config, with_target=True))
+    assert len(commands) == 2
+    assert commands[0].endswith(
+        "/workspace/repo/fixtures/bootloader/shared.dtb /workspace/build/Linux_for_Tegra/bootloader/shared.dtb"
+    )
+    assert commands[1].endswith(
+        "/workspace/repo/fixtures/bootloader/air020.dtb /workspace/build/Linux_for_Tegra/bootloader/air020.dtb"
+    )

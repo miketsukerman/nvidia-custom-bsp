@@ -20,12 +20,16 @@ def test_load_config_expands_relative_paths(
     (fixture_dir / "configs").mkdir(parents=True)
     (fixture_dir / "dts").mkdir(parents=True)
     (fixture_dir / "bootloader").mkdir(parents=True)
+    (fixture_dir / "target").mkdir(parents=True)
     (fixture_dir / "overlays" / "etc").mkdir(parents=True)
     (repo_root / "docker").mkdir()
     (repo_root / "docker" / "Dockerfile").write_text("FROM ubuntu:20.04\n", encoding="utf-8")
     (fixture_dir / "configs" / "enable-can.config").write_text("", encoding="utf-8")
+    (fixture_dir / "configs" / "enable-uart.config").write_text("", encoding="utf-8")
     (fixture_dir / "dts" / "board.dts").write_text("", encoding="utf-8")
+    (fixture_dir / "target" / "air020.dts").write_text("", encoding="utf-8")
     (fixture_dir / "bootloader" / "kernel_tegra194-p3668.dtb").write_text("", encoding="utf-8")
+    (fixture_dir / "bootloader" / "air020.dtb").write_text("", encoding="utf-8")
     (fixture_dir / "overlays" / "etc" / "motd").write_text("hi\n", encoding="utf-8")
     config_dir.mkdir()
     monkeypatch.setenv("JOBS", "12")
@@ -75,6 +79,24 @@ targets:
     flash_config: jetson-xavier-nx-devkit-emmc
     root_device: mmcblk0p1
     enabled: true
+  - name: air-020
+    module: p3767
+    flash_config: air-020-production
+    root_device: internal
+    enabled: true
+    kernel:
+      config_fragments:
+        - ../fixtures/configs/enable-uart.config
+      extra_dts:
+        - ../fixtures/target/air020.dts
+    rootfs:
+      overlays:
+        - src: ../fixtures/overlays/etc
+          dest: /opt/air020
+    bsp:
+      overlays:
+        - src: ../fixtures/bootloader/air020.dtb
+          dest: /bootloader/air020.dtb
 """,
         encoding="utf-8",
     )
@@ -85,6 +107,18 @@ targets:
     assert config.kernel.config_fragments[0].is_absolute()
     assert config.rootfs.overlays[0].src.is_absolute()
     assert config.bsp.overlays[0].src.is_absolute()
+    air020 = config.get_target("air-020")
+    assert air020.kernel is not None
+    assert air020.kernel.config_fragments is not None
+    assert air020.kernel.config_fragments[0].is_absolute()
+    assert air020.kernel.extra_dts is not None
+    assert air020.kernel.extra_dts[0].is_absolute()
+    assert air020.rootfs is not None
+    assert air020.rootfs.overlays is not None
+    assert air020.rootfs.overlays[0].src.is_absolute()
+    assert air020.bsp is not None
+    assert air020.bsp.overlays is not None
+    assert air020.bsp.overlays[0].src.is_absolute()
     assert config.repo_root == repo_root
 
 

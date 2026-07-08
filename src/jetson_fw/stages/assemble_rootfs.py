@@ -8,6 +8,7 @@ from .base import Stage, StageContext
 class AssembleRootfsStage(Stage):
     name = "assemble_rootfs"
     dependencies = ("build_kernel",)
+    target_scoped = True
 
     def commands(self, context: StageContext) -> list[str]:
         l4t_dir = context.workspace / "Linux_for_Tegra"
@@ -20,9 +21,9 @@ class AssembleRootfsStage(Stage):
         )
         context.logger.debug(
             "assemble_rootfs.options "
-            f"install_modules={context.config.rootfs.install_modules} "
-            f"extra_packages_count={len(context.config.rootfs.extra_packages)} "
-            f"overlay_count={len(context.config.rootfs.overlays)}"
+            f"install_modules={context.rootfs.install_modules} "
+            f"extra_packages_count={len(context.rootfs.extra_packages)} "
+            f"overlay_count={len(context.rootfs.overlays)}"
         )
         commands = [
             # nvidia-l4t-gputools postinst recreates this link without `ln -f`,
@@ -33,12 +34,12 @@ class AssembleRootfsStage(Stage):
             f"rm -f {rootfs_dir}/dev/random {rootfs_dir}/dev/urandom",
             f"cd {l4t_dir} && ./apply_binaries.sh",
         ]
-        if context.config.rootfs.install_modules:
+        if context.rootfs.install_modules:
             commands.append(
                 f"make -C {kernel_source} O={out_dir} modules_install INSTALL_MOD_PATH={rootfs_dir}"
             )
-        if context.config.rootfs.extra_packages:
-            packages = " ".join(context.config.rootfs.extra_packages)
+        if context.rootfs.extra_packages:
+            packages = " ".join(context.rootfs.extra_packages)
             commands.extend(
                 [
                     f"cp /usr/bin/qemu-aarch64-static {rootfs_dir}/usr/bin/",
@@ -46,7 +47,7 @@ class AssembleRootfsStage(Stage):
                     f"chroot {rootfs_dir} /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y {packages}",
                 ]
             )
-        for overlay in context.config.rootfs.overlays:
+        for overlay in context.rootfs.overlays:
             overlay_src = context.repo_path(overlay.src)
             commands.append(
                 f"mkdir -p {rootfs_dir}{overlay.dest} && cp -a {overlay_src}/. {rootfs_dir}{overlay.dest}"
