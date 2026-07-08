@@ -8,10 +8,11 @@ from .base import Stage, StageContext
 class CustomizeBspStage(Stage):
     name = "customize_bsp"
     dependencies = ("fetch_bsp",)
+    target_scoped = True
 
     def commands(self, context: StageContext) -> list[str]:
         l4t_dir = context.workspace / "Linux_for_Tegra"
-        overlays = context.config.bsp.overlays
+        overlays = context.bsp.overlays
         context.logger.debug(
             f"customize_bsp.context l4t_dir={l4t_dir} overlay_count={len(overlays)}"
         )

@@ -10,7 +10,7 @@ from jetson_fw.utils.logging import get_logger
 from jetson_fw.utils.shell import ShellRunner
 
 
-def build_config(tmp_path: Path) -> BuildConfig:
+def build_config(tmp_path: Path, *, target_rootfs: dict[str, object] | None = None) -> BuildConfig:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     dockerfile = repo_root / "docker" / "Dockerfile"
@@ -50,6 +50,7 @@ def build_config(tmp_path: Path) -> BuildConfig:
                     "flash_config": "jetson-xavier-nx-devkit-emmc",
                     "root_device": "mmcblk0p1",
                     "enabled": True,
+                    **({"rootfs": target_rootfs} if target_rootfs else {}),
                 }
             ],
         }
@@ -58,12 +59,13 @@ def build_config(tmp_path: Path) -> BuildConfig:
     return config
 
 
-def make_context(config: BuildConfig) -> StageContext:
+def make_context(config: BuildConfig, *, with_target: bool = False) -> StageContext:
     logger = get_logger()
     return StageContext(
         config=config,
         docker=DockerRunner(config, ShellRunner(logger)),
         logger=logger,
+        target=config.targets[0] if with_target else None,
     )
 
 
@@ -82,3 +84,24 @@ def test_assemble_rootfs_installs_modules_from_synced_kernel_tree(tmp_path: Path
         f"cd {l4t_dir} && ./apply_binaries.sh",
         f"make -C {kernel_source} O={out_dir} modules_install INSTALL_MOD_PATH={rootfs_dir}",
     ]
+
+
+def test_assemble_rootfs_includes_target_rootfs_overrides(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    target_overlay = repo_root / "fixtures" / "rootfs" / "target"
+    target_overlay.mkdir(parents=True)
+    (target_overlay / "file.txt").write_text("x", encoding="utf-8")
+    config = build_config(
+        tmp_path,
+        target_rootfs={
+            "install_modules": False,
+            "extra_packages": ["vim"],
+            "overlays": [{"src": str(target_overlay), "dest": "/opt/air020"}],
+        },
+    )
+    context = make_context(config, with_target=True)
+    commands = AssembleRootfsStage().commands(context)
+
+    assert not any("modules_install" in command for command in commands)
+    assert any("apt-get install -y vim" in command for command in commands)
+    assert any("/workspace/repo/fixtures/rootfs/target/." in command for command in commands)

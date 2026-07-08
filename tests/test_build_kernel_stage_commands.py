@@ -11,7 +11,10 @@ from jetson_fw.utils.shell import ShellRunner
 
 
 def build_config(
-    tmp_path: Path, extra_dts: list[str] | None = None, fragments: list[str] | None = None
+    tmp_path: Path,
+    extra_dts: list[str] | None = None,
+    fragments: list[str] | None = None,
+    target_kernel: dict[str, object] | None = None,
 ) -> BuildConfig:
     repo_root = tmp_path / "repo"
     repo_root.mkdir(exist_ok=True)
@@ -57,6 +60,7 @@ def build_config(
                     "flash_config": "jetson-xavier-nx-devkit-emmc",
                     "root_device": "mmcblk0p1",
                     "enabled": True,
+                    **({"kernel": target_kernel} if target_kernel else {}),
                 }
             ],
         }
@@ -65,12 +69,13 @@ def build_config(
     return config
 
 
-def make_context(config: BuildConfig) -> StageContext:
+def make_context(config: BuildConfig, *, with_target: bool = False) -> StageContext:
     logger = get_logger()
     return StageContext(
         config=config,
         docker=DockerRunner(config, ShellRunner(logger)),
         logger=logger,
+        target=config.targets[0] if with_target else None,
     )
 
 
@@ -149,3 +154,29 @@ def test_build_kernel_with_config_fragment(tmp_path: Path) -> None:
     defconfig_idx = next(i for i, c in enumerate(cmds) if "tegra_defconfig" in c)
     merge_idx = next(i for i, c in enumerate(cmds) if "merge_config.sh" in c)
     assert merge_idx > defconfig_idx
+
+
+def test_build_kernel_merges_target_overrides(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    target_dts = repo_root / "fixtures" / "dts" / "air020.dts"
+    target_fragment = repo_root / "fixtures" / "configs" / "air020.config"
+    target_dts.parent.mkdir(parents=True)
+    target_fragment.parent.mkdir(parents=True)
+    target_dts.write_text("", encoding="utf-8")
+    target_fragment.write_text("", encoding="utf-8")
+
+    config = build_config(
+        tmp_path,
+        extra_dts=[str(target_dts)],
+        target_kernel={
+            "defconfig": "air020_defconfig",
+            "extra_dts": [str(target_dts)],
+            "config_fragments": [str(target_fragment)],
+        },
+    )
+    context = make_context(config, with_target=True)
+    cmds = BuildKernelStage().commands(context)
+
+    assert any("air020_defconfig" in command for command in cmds)
+    assert any("air020.config" in command for command in cmds)
+    assert sum("cp /workspace/repo/fixtures/dts/air020.dts" in command for command in cmds) == 2

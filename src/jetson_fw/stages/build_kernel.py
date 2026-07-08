@@ -8,6 +8,7 @@ from .base import Stage, StageContext
 class BuildKernelStage(Stage):
     name = "build_kernel"
     dependencies = ("toolchain", "source_sync")
+    target_scoped = True
 
     def commands(self, context: StageContext) -> list[str]:
         source_dir = context.kernel_source_dir
@@ -22,23 +23,22 @@ class BuildKernelStage(Stage):
         )
         context.logger.debug(
             "build_kernel.options "
-            f"extra_dts_count={len(context.config.kernel.extra_dts)} "
-            f"config_fragment_count={len(context.config.kernel.config_fragments)}"
+            f"extra_dts_count={len(context.kernel.extra_dts)} "
+            f"config_fragment_count={len(context.kernel.config_fragments)}"
         )
         commands = [
             f"mkdir -p {out_dir}",
         ]
-        if context.config.kernel.extra_dts:
+        if context.kernel.extra_dts:
             commands.append(f"mkdir -p {source_dir}/arch/arm64/boot/dts")
-        for dts in context.config.kernel.extra_dts:
+        for dts in context.kernel.extra_dts:
             commands.append(f"cp {context.repo_path(dts)} {source_dir}/arch/arm64/boot/dts/")
         commands.append(
-            f"make -C {source_dir} {make_vars} O={out_dir} {context.config.kernel.defconfig}"
+            f"make -C {source_dir} {make_vars} O={out_dir} {context.kernel.defconfig}"
         )
-        if context.config.kernel.config_fragments:
+        if context.kernel.config_fragments:
             fragments = " ".join(
-                str(context.repo_path(fragment))
-                for fragment in context.config.kernel.config_fragments
+                str(context.repo_path(fragment)) for fragment in context.kernel.config_fragments
             )
             commands.append(
                 f"cd {source_dir} && {make_vars} {source_dir}/scripts/kconfig/merge_config.sh "

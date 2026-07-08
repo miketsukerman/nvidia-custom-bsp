@@ -96,6 +96,46 @@ def _normalize_paths(data: dict[str, Any], base_dir: Path) -> dict[str, Any]:
         bsp_overlays.append(overlay_copy)
     bsp["overlays"] = bsp_overlays
     normalized["bsp"] = bsp
+
+    targets: list[dict[str, Any]] = []
+    for target in normalized.get("targets", []):
+        target_copy = dict(target)
+
+        target_kernel = dict(target_copy.get("kernel", {}))
+        target_kernel["config_fragments"] = [
+            str(_to_absolute_host_path(item, base_dir))
+            for item in target_kernel.get("config_fragments", [])
+        ]
+        target_kernel["extra_dts"] = [
+            str(_to_absolute_host_path(item, base_dir)) for item in target_kernel.get("extra_dts", [])
+        ]
+        if target_kernel:
+            target_copy["kernel"] = target_kernel
+
+        target_rootfs = dict(target_copy.get("rootfs", {}))
+        target_rootfs_overlays: list[dict[str, Any]] = []
+        for overlay in target_rootfs.get("overlays", []):
+            overlay_copy = dict(overlay)
+            overlay_copy["src"] = str(_to_absolute_host_path(overlay_copy["src"], base_dir))
+            target_rootfs_overlays.append(overlay_copy)
+        if target_rootfs_overlays:
+            target_rootfs["overlays"] = target_rootfs_overlays
+        if target_rootfs:
+            target_copy["rootfs"] = target_rootfs
+
+        target_bsp = dict(target_copy.get("bsp", {}))
+        target_bsp_overlays: list[dict[str, Any]] = []
+        for overlay in target_bsp.get("overlays", []):
+            overlay_copy = dict(overlay)
+            overlay_copy["src"] = str(_to_absolute_host_path(overlay_copy["src"], base_dir))
+            target_bsp_overlays.append(overlay_copy)
+        if target_bsp_overlays:
+            target_bsp["overlays"] = target_bsp_overlays
+        if target_bsp:
+            target_copy["bsp"] = target_bsp
+
+        targets.append(target_copy)
+    normalized["targets"] = targets
     return normalized
 
 

@@ -1,6 +1,6 @@
 # Jetson Firmware Builder
 
-Jetson Firmware Builder is a Dockerized Python toolchain for building and flashing custom NVIDIA Jetson Xavier NX and Orin NX firmware for JetPack 5.1 / L4T R35.2.1.
+Jetson Firmware Builder is a Dockerized Python toolchain for building and flashing custom NVIDIA Jetson firmware for JetPack 5.1 / L4T R35.2.1, including multi-target workflows from a single YAML.
 
 ## Prerequisites
 
@@ -20,6 +20,8 @@ Validate the example configs on the host:
 ```bash
 jetson-fw validate configs/xavier-nx.yaml --schema-out configs/schema.json
 jetson-fw validate configs/orin-nx.yaml
+jetson-fw validate configs/xavier-orin-multi.yaml
+jetson-fw validate configs/air-020-air-021.yaml
 ```
 
 Build or pull the container image:
@@ -93,8 +95,16 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 ### `targets`
 - `name` (required)
 - `module` (required enum: `p3668`, `p3767`)
-- `flash_config` (required enum: `jetson-xavier-nx-devkit-emmc`, `jetson-orin-nano-devkit`)
+- `flash_config` (required string): `flash.sh` board configuration for this target (known NVIDIA defaults are still compatibility-checked by module)
 - `root_device` (required enum: `mmcblk0p1`, `internal`)
+- `kernel` (optional): per-target kernel overrides merged with top-level `kernel`
+  - `source_tag` / `defconfig` override shared values when set
+  - `config_fragments` / `extra_dts` append to shared lists
+- `rootfs` (optional): per-target rootfs overrides merged with top-level `rootfs`
+  - `install_modules` overrides shared value when set
+  - `extra_packages` / `overlays` append to shared lists
+- `bsp` (optional): per-target BSP overrides merged with top-level `bsp`
+  - `overlays` appends to shared list
 - `enabled` (default `true`)
 
 ## Docker execution model
@@ -102,6 +112,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `validate` runs on the host and does not require Docker.
 - `image` runs `docker build` or `docker pull` using the YAML `docker` section.
 - `build`, `flash`, and `all` run inside the builder image and bind-mount the repository plus configured volumes.
+- Shared download/toolchain stages are reused, while target-scoped stages (`customize_bsp`, `source_sync`, `build_kernel`, `assemble_rootfs`, `flash`) keep per-target stage markers.
 - `bsp.overlays` are applied inside `Linux_for_Tegra` before source sync and flashing, so they can override NVIDIA bootloader config files such as MB1 BCTs or bootloader DTBs.
 - Flashing adds `--privileged` or USB device passthrough mounts.
 - Download archives in `/workspace/build/downloads` are treated as a reusable cache for BSP, sample rootfs, and toolchain artifacts.

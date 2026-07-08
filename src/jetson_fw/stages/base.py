@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 
-from jetson_fw.config.model import BuildConfig, TargetConfig
+from jetson_fw.config.model import BspConfig, BuildConfig, KernelConfig, RootfsConfig, TargetConfig
 from jetson_fw.docker.runner import DockerRunner
 from jetson_fw.utils.logging import Logger
 
@@ -31,10 +31,24 @@ class StageContext:
         return self.workspace / "Linux_for_Tegra" / "sources" / "kernel" / "kernel-5.10"
 
     @property
+    def kernel(self) -> KernelConfig:
+        return self.config.effective_kernel(self.target)
+
+    @property
+    def rootfs(self) -> RootfsConfig:
+        return self.config.effective_rootfs(self.target)
+
+    @property
+    def bsp(self) -> BspConfig:
+        return self.config.effective_bsp(self.target)
+
+    @property
     def state_dir(self) -> Path:
         return self.workspace / ".state"
 
-    def marker_path(self, stage_name: str) -> Path:
+    def marker_path(self, stage_name: str, *, target_scoped: bool = False) -> Path:
+        if target_scoped and self.target is not None:
+            return self.state_dir / f"{stage_name}.{self.target.name}.done"
         return self.state_dir / f"{stage_name}.done"
 
     def repo_path(self, host_path: Path) -> Path:
@@ -46,19 +60,22 @@ class Stage(ABC):
 
     name: str
     dependencies: tuple[str, ...] = ()
+    target_scoped: bool = False
 
     def validate(self, context: StageContext) -> None:
         """Validate stage prerequisites."""
 
     def should_skip(self, context: StageContext) -> bool:
-        return not context.force and context.marker_path(self.name).exists()
+        return not context.force and context.marker_path(
+            self.name, target_scoped=self.target_scoped
+        ).exists()
 
     @abstractmethod
     def commands(self, context: StageContext) -> list[str]:
         """Return the shell commands executed for this stage."""
 
     def run(self, context: StageContext) -> None:
-        marker = context.marker_path(self.name)
+        marker = context.marker_path(self.name, target_scoped=self.target_scoped)
         if self.should_skip(context):
             context.logger.info(f"Skipping {self.name}; marker exists.")
             context.logger.debug(

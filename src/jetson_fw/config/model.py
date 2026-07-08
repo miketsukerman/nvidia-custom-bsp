@@ -25,13 +25,6 @@ class ModuleEnum(str, Enum):
     ORIN_NX = "p3767"
 
 
-class FlashConfigEnum(str, Enum):
-    """Supported L4T R35.2.1 flash configurations."""
-
-    XAVIER_NX_DEVKIT_EMMC = "jetson-xavier-nx-devkit-emmc"
-    ORIN_NANO_DEVKIT = "jetson-orin-nano-devkit"
-
-
 class RootDeviceEnum(str, Enum):
     """Supported root device targets."""
 
@@ -255,6 +248,59 @@ class BspConfig(BaseModel):
     )
 
 
+class TargetKernelConfig(BaseModel):
+    """Per-target kernel overrides."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_tag: str | None = Field(
+        default=None,
+        description="Optional kernel/device-tree source tag override for this target",
+    )
+    defconfig: str | None = Field(
+        default=None,
+        description="Optional kernel defconfig override for this target",
+    )
+    config_fragments: list[Path] | None = Field(
+        default=None,
+        description="Optional additional kernel config fragments for this target",
+    )
+    extra_dts: list[Path] | None = Field(
+        default=None,
+        description="Optional additional custom DTS files for this target",
+    )
+
+
+class TargetRootfsConfig(BaseModel):
+    """Per-target rootfs overrides."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    install_modules: bool | None = Field(
+        default=None,
+        description="Optional override for installing kernel modules into rootfs",
+    )
+    extra_packages: list[str] | None = Field(
+        default=None,
+        description="Optional additional apt packages for this target",
+    )
+    overlays: list[RootfsOverlay] | None = Field(
+        default=None,
+        description="Optional additional files or directories copied into rootfs",
+    )
+
+
+class TargetBspConfig(BaseModel):
+    """Per-target Linux_for_Tegra overrides."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    overlays: list[BspOverlay] | None = Field(
+        default=None,
+        description="Optional additional files or directories copied into Linux_for_Tegra",
+    )
+
+
 class TargetConfig(BaseModel):
     """Per-target flashing options."""
 
@@ -262,11 +308,31 @@ class TargetConfig(BaseModel):
 
     name: str = Field(description="Target name used by the CLI")
     module: ModuleEnum = Field(description="Jetson module identifier")
-    flash_config: FlashConfigEnum = Field(description="flash.sh board configuration name")
+    flash_config: str = Field(description="flash.sh board configuration name")
     root_device: RootDeviceEnum = Field(description="flash.sh root device argument")
+    kernel: TargetKernelConfig | None = Field(
+        default=None,
+        description="Optional per-target kernel overrides",
+    )
+    rootfs: TargetRootfsConfig | None = Field(
+        default=None,
+        description="Optional per-target rootfs overrides",
+    )
+    bsp: TargetBspConfig | None = Field(
+        default=None,
+        description="Optional per-target Linux_for_Tegra overrides",
+    )
     enabled: bool = Field(
         default=True, description="Whether target is active for build/all commands"
     )
+
+    @field_validator("flash_config")
+    @classmethod
+    def validate_flash_config(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned or any(char.isspace() for char in cleaned):
+            raise ValueError("flash_config must be a non-empty value without spaces")
+        return cleaned
 
 
 class BuildConfig(BaseModel):
@@ -300,24 +366,19 @@ class BuildConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_target_compatibility(self) -> BuildConfig:
+        known_flash_configs = {
+            "jetson-xavier-nx-devkit-emmc": ModuleEnum.XAVIER_NX,
+            "jetson-orin-nano-devkit": ModuleEnum.ORIN_NX,
+        }
         target_names: set[str] = set()
         for target in self.targets:
             if target.name in target_names:
                 raise ValueError(f"duplicate target name '{target.name}'")
             target_names.add(target.name)
-            if (
-                target.module == ModuleEnum.ORIN_NX
-                and target.flash_config != FlashConfigEnum.ORIN_NANO_DEVKIT
-            ):
+            expected_module = known_flash_configs.get(target.flash_config)
+            if expected_module is not None and target.module != expected_module:
                 raise ValueError(
-                    "Orin NX module p3767 must use flash_config 'jetson-orin-nano-devkit' on R35.2.1"
-                )
-            if (
-                target.module == ModuleEnum.XAVIER_NX
-                and target.flash_config != FlashConfigEnum.XAVIER_NX_DEVKIT_EMMC
-            ):
-                raise ValueError(
-                    "Xavier NX module p3668 must use flash_config 'jetson-xavier-nx-devkit-emmc'"
+                    f"flash_config '{target.flash_config}' requires module '{expected_module.value}'"
                 )
         if self.l4t.release != "35.2.1":
             raise ValueError("this tool currently supports L4T release 35.2.1 only")
@@ -356,6 +417,40 @@ class BuildConfig(BaseModel):
             if target.name == name:
                 return target
         raise KeyError(name)
+
+    def effective_kernel(self, target: TargetConfig | None = None) -> KernelConfig:
+        kernel = self.kernel.model_copy(deep=True)
+        if target is None or target.kernel is None:
+            return kernel
+        if target.kernel.source_tag is not None:
+            kernel.source_tag = target.kernel.source_tag
+        if target.kernel.defconfig is not None:
+            kernel.defconfig = target.kernel.defconfig
+        if target.kernel.config_fragments is not None:
+            kernel.config_fragments = [*kernel.config_fragments, *target.kernel.config_fragments]
+        if target.kernel.extra_dts is not None:
+            kernel.extra_dts = [*kernel.extra_dts, *target.kernel.extra_dts]
+        return kernel
+
+    def effective_rootfs(self, target: TargetConfig | None = None) -> RootfsConfig:
+        rootfs = self.rootfs.model_copy(deep=True)
+        if target is None or target.rootfs is None:
+            return rootfs
+        if target.rootfs.install_modules is not None:
+            rootfs.install_modules = target.rootfs.install_modules
+        if target.rootfs.extra_packages is not None:
+            rootfs.extra_packages = [*rootfs.extra_packages, *target.rootfs.extra_packages]
+        if target.rootfs.overlays is not None:
+            rootfs.overlays = [*rootfs.overlays, *target.rootfs.overlays]
+        return rootfs
+
+    def effective_bsp(self, target: TargetConfig | None = None) -> BspConfig:
+        bsp = self.bsp.model_copy(deep=True)
+        if target is None or target.bsp is None:
+            return bsp
+        if target.bsp.overlays is not None:
+            bsp.overlays = [*bsp.overlays, *target.bsp.overlays]
+        return bsp
 
 
 def _validate_sha256(value: str) -> str:

@@ -72,6 +72,66 @@ def test_invalid_flash_config_rejected() -> None:
         BuildConfig.model_validate(invalid)
 
 
+def test_custom_flash_config_allowed_for_module() -> None:
+    custom = dict(BASE)
+    custom["targets"] = [
+        {
+            "name": "air-020",
+            "module": "p3767",
+            "flash_config": "air-020-production",
+            "root_device": "internal",
+            "enabled": True,
+        }
+    ]
+    config = BuildConfig.model_validate(custom)
+    assert config.targets[0].flash_config == "air-020-production"
+
+
+def test_effective_target_overrides_merge_with_shared_values() -> None:
+    merged = dict(BASE)
+    merged["kernel"] = {
+        "source_tag": "jetson_35.2.1",
+        "defconfig": "tegra_defconfig",
+        "extra_dts": ["/tmp/shared.dts"],
+    }
+    merged["rootfs"] = {
+        "install_modules": True,
+        "extra_packages": ["curl"],
+        "overlays": [{"src": "/tmp/shared-rootfs", "dest": "/etc"}],
+    }
+    merged["bsp"] = {"overlays": [{"src": "/tmp/shared-bsp", "dest": "/bootloader/shared"}]}
+    merged["targets"] = [
+        {
+            "name": "air-021",
+            "module": "p3767",
+            "flash_config": "air-021-production",
+            "root_device": "internal",
+            "enabled": True,
+            "kernel": {"extra_dts": ["/tmp/target.dts"], "defconfig": "defconfig_air021"},
+            "rootfs": {
+                "install_modules": False,
+                "extra_packages": ["vim"],
+                "overlays": [{"src": "/tmp/target-rootfs", "dest": "/opt"}],
+            },
+            "bsp": {"overlays": [{"src": "/tmp/target-bsp", "dest": "/bootloader/target"}]},
+        }
+    ]
+    config = BuildConfig.model_validate(merged)
+    target = config.targets[0]
+
+    kernel = config.effective_kernel(target)
+    assert kernel.defconfig == "defconfig_air021"
+    assert [str(path) for path in kernel.extra_dts] == ["/tmp/shared.dts", "/tmp/target.dts"]
+
+    rootfs = config.effective_rootfs(target)
+    assert rootfs.install_modules is False
+    assert rootfs.extra_packages == ["curl", "vim"]
+    assert [overlay.dest for overlay in rootfs.overlays] == ["/etc", "/opt"]
+
+    bsp = config.effective_bsp(target)
+    assert [overlay.dest for overlay in bsp.overlays] == ["/bootloader/shared", "/bootloader/target"]
+
+
 def test_invalid_volume_rejected() -> None:
     invalid = dict(BASE)
     invalid["docker"] = dict(BASE["docker"])
