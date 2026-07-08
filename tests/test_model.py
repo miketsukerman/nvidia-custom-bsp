@@ -129,7 +129,10 @@ def test_effective_target_overrides_merge_with_shared_values() -> None:
     assert [overlay.dest for overlay in rootfs.overlays] == ["/etc", "/opt"]
 
     bsp = config.effective_bsp(target)
-    assert [overlay.dest for overlay in bsp.overlays] == ["/bootloader/shared", "/bootloader/target"]
+    assert [overlay.dest for overlay in bsp.overlays] == [
+        "/bootloader/shared",
+        "/bootloader/target",
+    ]
 
 
 def test_invalid_volume_rejected() -> None:

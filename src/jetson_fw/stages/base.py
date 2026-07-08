@@ -66,9 +66,10 @@ class Stage(ABC):
         """Validate stage prerequisites."""
 
     def should_skip(self, context: StageContext) -> bool:
-        return not context.force and context.marker_path(
-            self.name, target_scoped=self.target_scoped
-        ).exists()
+        return (
+            not context.force
+            and context.marker_path(self.name, target_scoped=self.target_scoped).exists()
+        )
 
     @abstractmethod
     def commands(self, context: StageContext) -> list[str]:

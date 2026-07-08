@@ -12,7 +12,7 @@ from jetson_fw.utils.shell import ShellRunner
 
 def build_config(tmp_path: Path, *, target_rootfs: dict[str, object] | None = None) -> BuildConfig:
     repo_root = tmp_path / "repo"
-    repo_root.mkdir()
+    repo_root.mkdir(exist_ok=True)
     dockerfile = repo_root / "docker" / "Dockerfile"
     dockerfile.parent.mkdir()
     dockerfile.write_text("FROM ubuntu:20.04\n", encoding="utf-8")

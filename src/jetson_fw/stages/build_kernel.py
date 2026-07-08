@@ -33,9 +33,7 @@ class BuildKernelStage(Stage):
             commands.append(f"mkdir -p {source_dir}/arch/arm64/boot/dts")
         for dts in context.kernel.extra_dts:
             commands.append(f"cp {context.repo_path(dts)} {source_dir}/arch/arm64/boot/dts/")
-        commands.append(
-            f"make -C {source_dir} {make_vars} O={out_dir} {context.kernel.defconfig}"
-        )
+        commands.append(f"make -C {source_dir} {make_vars} O={out_dir} {context.kernel.defconfig}")
         if context.kernel.config_fragments:
             fragments = " ".join(
                 str(context.repo_path(fragment)) for fragment in context.kernel.config_fragments
