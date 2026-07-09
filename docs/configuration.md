@@ -49,7 +49,7 @@ Docker execution settings for the builder container.
 | `registry` | string | no | `""` |
 | `privileged_for_flash` | boolean | no | `true` |
 | `devices` | list of paths | no | `[/dev/bus/usb]` |
-| `volumes` | list of `host:container[:mode]` strings | no | `[../build:/workspace/build]` |
+| `volumes` | list of `host:container[:mode]` strings | no | `[./build:/workspace/build]` |
 | `environment` | map of string→string | no | `{JOBS: "8"}` |
 
 **`image`** — Docker image tag for the builder.  The image is either built locally (when `build: true`) or pulled from the `registry`.
@@ -292,7 +292,8 @@ Each entry is a **TargetConfig**:
 | Value | Device |
 |-------|--------|
 | `mmcblk0p1` | eMMC partition 1 (Xavier NX eMMC modules) |
-| `internal` | Internal storage (Orin modules, NVMe, or SD) |
+| `nvme0n1` | NVMe device (Orin modules with NVMe storage) |
+| `internal` | Internal storage (generic NVIDIA devkit default for Orin modules) |
 
 **`enabled`** — When `false`, the target is skipped by the `build` and `all` commands.
 
@@ -345,12 +346,19 @@ targets:
 
 ## Examples
 
+> **Working example**: [`configs/jetpack51.yaml`](../configs/jetpack51.yaml) is a fully-valid
+> multi-target config for JetPack 5.1 (L4T 35.6.4) with Xavier NX and Orin NX targets.
+> Run `jetson-fw validate configs/jetpack51.yaml` to verify it against the schema at any time.
+
+The annotated snippets below illustrate specific features; paths and SHA256 values are
+representative, not guaranteed to be live.
+
 ### Single target – Orin NX
 
 A minimal configuration for a single Jetson Orin NX target with a custom DTS and CAN kernel fragment.
 
 ```yaml
-# configs/orin-nx.yaml
+# illustrative – see configs/jetpack51.yaml for a working example
 version: 1
 
 docker:
@@ -414,7 +422,7 @@ targets:
 ### Single target – Xavier NX (eMMC)
 
 ```yaml
-# configs/xavier-nx.yaml
+# illustrative – see configs/jetpack51.yaml for a working example
 version: 1
 
 docker:
@@ -480,7 +488,7 @@ targets:
 Shared kernel and rootfs build with per-target DTS overrides.  Both targets are built with a single `jetson-fw build` invocation.
 
 ```yaml
-# configs/xavier-orin-multi.yaml
+# illustrative – see configs/jetpack51.yaml for a working multi-target example
 version: 1
 
 docker:
@@ -555,7 +563,7 @@ targets:
 Two production variants that share a common kernel/rootfs but each supply different bootloader files via `bsp.overlays`.
 
 ```yaml
-# configs/air-020-air-021.yaml
+# illustrative – see configs/jetpack51.yaml for a working example with BSP overlays
 version: 1
 
 docker:

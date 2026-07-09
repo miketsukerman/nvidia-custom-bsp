@@ -15,31 +15,28 @@ pip install -e .
 
 ## Quickstart
 
-Validate the example configs on the host:
+Validate the example config on the host:
 
 ```bash
-jetson-fw validate configs/xavier-nx.yaml --schema-out configs/schema.json
-jetson-fw validate configs/orin-nx.yaml
-jetson-fw validate configs/xavier-orin-multi.yaml
-jetson-fw validate configs/air-020-air-021.yaml
+jetson-fw validate configs/jetpack51.yaml --schema-out configs/schema.json
 ```
 
 Build or pull the container image:
 
 ```bash
-jetson-fw image configs/xavier-nx.yaml
+jetson-fw image configs/jetpack51.yaml
 ```
 
 Preview the Docker invocation and inner L4T commands:
 
 ```bash
-jetson-fw build configs/xavier-nx.yaml --dry-run
+jetson-fw build configs/jetpack51.yaml --dry-run
 ```
 
 Flash a board with USB passthrough:
 
 ```bash
-jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
+jetson-fw flash configs/jetpack51.yaml --target xavier-nx
 ```
 
 ## Logging modes
@@ -50,62 +47,15 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 
 ## YAML Reference
 
-### `version`
-- `1` (required): schema version.
+For the full per-field configuration reference, annotated examples, and merge semantics for
+per-target overrides, see [docs/configuration.md](docs/configuration.md).
 
-### `docker`
-- `image` (required): builder image tag.
-- `dockerfile` (default `docker/Dockerfile`): Dockerfile path when `build: true`.
-- `build` (default `true`): build locally instead of `docker pull`.
-- `registry` (default empty): optional registry prefix.
-- `privileged_for_flash` (default `true`): use `--privileged` for flash containers.
-- `devices` (default `[/dev/bus/usb]`): device paths for flashing.
-- `volumes` (default `./build:/workspace/build`): extra bind mounts using `host:container[:mode]`.
-- `environment` (default `JOBS=8`): extra container environment variables.
+The top-level sections are: `version`, `docker`, `l4t`, `toolchain`, `workspace`, `kernel`,
+`rootfs`, `bsp`, and `targets`.  All sections except `docker`, `l4t`, `toolchain`, and `targets`
+are optional and carry sensible defaults.  Per-target `kernel`, `rootfs`, and `bsp` sub-sections
+are merged with their top-level counterparts: scalar fields override, list fields append.
 
-### `l4t`
-- `release` (default `35.2.1`): JetPack/L4T release.
-- `bsp_url` / `sample_rootfs_url` (required): download URLs.
-- `bsp_sha256` / `sample_rootfs_sha256` (required): 64-character SHA256 digests.
-
-### `toolchain`
-- `name` (default `bootlin-gcc-9.3`)
-- `url` (required)
-- `sha256` (required)
-- `cross_compile_prefix` (default `aarch64-buildroot-linux-gnu-`)
-
-### `workspace`
-- `root` (default `/workspace/build`): build path inside the container.
-- `keep_intermediate` (default `true`)
-
-### `kernel`
-- `source_tag` (default `jetson_<l4t.release>`): used for the kernel/device-tree source sync that the build runs before compiling.
-- `defconfig` (default `tegra_defconfig`)
-- `config_fragments` (default empty)
-- `extra_dts` (default empty)
-
-### `rootfs`
-- `install_modules` (default `true`)
-- `extra_packages` (default empty)
-- `overlays` (default empty)
-
-### `bsp`
-- `overlays` (default empty): files or directories copied into the extracted `Linux_for_Tegra` tree after `fetch_bsp` and before `source_sync`, kernel build, and flash. Use this for bootloader DTB/BCT replacements that affect early boot device initialization.
-
-### `targets`
-- `name` (required)
-- `module` (required enum: `p3668`, `p3767`)
-- `flash_config` (required string): `flash.sh` board configuration for this target (known NVIDIA defaults are still compatibility-checked by module)
-- `root_device` (required enum: `mmcblk0p1`, `internal`)
-- `kernel` (optional): per-target kernel overrides merged with top-level `kernel`
-  - `source_tag` / `defconfig` override shared values when set
-  - `config_fragments` / `extra_dts` append to shared lists
-- `rootfs` (optional): per-target rootfs overrides merged with top-level `rootfs`
-  - `install_modules` overrides shared value when set
-  - `extra_packages` / `overlays` append to shared lists
-- `bsp` (optional): per-target BSP overrides merged with top-level `bsp`
-  - `overlays` appends to shared list
-- `enabled` (default `true`)
+A working multi-target example is in [`configs/jetpack51.yaml`](configs/jetpack51.yaml).
 
 ## Docker execution model
 
@@ -174,7 +124,7 @@ flashing step.
 The `flash` command automatically runs a preflight check and emits warnings if
 the rule is missing or the user is not in `plugdev`.
 
-
+## Troubleshooting
 
 - If `flash.sh` cannot see the Jetson in recovery mode, confirm `/dev/bus/usb` is exposed and retry with `privileged_for_flash: true`.
 - If a config path is rejected, ensure relative paths are relative to the YAML file.
