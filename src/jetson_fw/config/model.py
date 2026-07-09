@@ -177,8 +177,11 @@ class KernelConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     source_tag: str = Field(
-        default="jetson_35.2.1",
-        description="Kernel/device-tree tag used for the filtered source_sync.sh kernel sync",
+        default="",
+        description=(
+            "Kernel/device-tree tag used for the filtered source_sync.sh kernel sync; "
+            "defaults to jetson_<l4t.release> when omitted"
+        ),
     )
     defconfig: str = Field(default="tegra_defconfig", description="Kernel defconfig target")
     config_fragments: list[Path] = Field(
@@ -381,10 +384,8 @@ class BuildConfig(BaseModel):
                 raise ValueError(
                     f"flash_config '{target.flash_config}' requires module '{expected_module.value}'"
                 )
-        if self.l4t.release != "35.2.1":
-            raise ValueError("this tool currently supports L4T release 35.2.1 only")
-        if self.kernel.source_tag != "jetson_35.2.1":
-            raise ValueError("kernel.source_tag must be 'jetson_35.2.1' for L4T R35.2.1 builds")
+        if not self.kernel.source_tag:
+            self.kernel.source_tag = f"jetson_{self.l4t.release}"
         return self
 
     @property

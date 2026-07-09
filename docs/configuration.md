@@ -170,12 +170,12 @@ Global kernel build options shared by all targets (unless overridden per-target)
 
 | Field | Type | Required | Default |
 |-------|------|----------|---------|
-| `source_tag` | string | no | `"jetson_35.2.1"` |
+| `source_tag` | string | no | `"jetson_<l4t.release>"` |
 | `defconfig` | string | no | `"tegra_defconfig"` |
 | `config_fragments` | list of paths | no | `[]` |
 | `extra_dts` | list of paths | no | `[]` |
 
-**`source_tag`** — Git tag used to check out the kernel and device-tree sources during `source_sync`.  Must correspond to a tag in the Jetson kernel repository (e.g. `jetson_35.2.1`).
+**`source_tag`** — Git tag used to check out the kernel and device-tree sources during `source_sync`. Defaults to `jetson_<l4t.release>` when omitted and must correspond to a valid tag in the Jetson kernel repository.
 
 **`defconfig`** — Kernel defconfig target passed to `make` (e.g. `tegra_defconfig`).
 

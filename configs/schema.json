@@ -110,8 +110,8 @@
       "description": "Kernel build options.",
       "properties": {
         "source_tag": {
-          "default": "jetson_35.2.1",
-          "description": "Kernel/device-tree tag used for the filtered source_sync.sh kernel sync",
+          "default": "",
+          "description": "Kernel/device-tree tag used for the filtered source_sync.sh kernel sync; defaults to jetson_<l4t.release> when omitted",
           "title": "Source Tag",
           "type": "string"
         },
