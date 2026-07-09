@@ -72,7 +72,7 @@ targets:
     enabled: true
     kernel:
       extra_dts:
-        - "../fixtures/dts/air-020-carrier.dts"
+        - "../fixtures/dts/air020-carrier.dts"
     bsp:
       overlays:
         - src: "../fixtures/bootloader/air-020"
@@ -85,7 +85,7 @@ targets:
     enabled: true
     kernel:
       extra_dts:
-        - "../fixtures/dts/air-021-carrier.dts"
+        - "../fixtures/dts/air021-carrier.dts"
     bsp:
       overlays:
         - src: "../fixtures/bootloader/air-021"
