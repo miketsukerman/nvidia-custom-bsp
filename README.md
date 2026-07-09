@@ -1,6 +1,6 @@
 # Jetson Firmware Builder
 
-Jetson Firmware Builder is a Dockerized Python toolchain for building and flashing custom NVIDIA Jetson firmware for JetPack 5.1 / L4T R35.2.1, including multi-target workflows from a single YAML.
+Jetson Firmware Builder is a Dockerized Python toolchain for building and flashing custom NVIDIA Jetson firmware across JetPack/L4T releases, including multi-target workflows from a single YAML.
 
 ## Prerequisites
 
@@ -64,7 +64,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `environment` (default `JOBS=8`): extra container environment variables.
 
 ### `l4t`
-- `release` (default `35.2.1`): supported JetPack/L4T release.
+- `release` (default `35.2.1`): JetPack/L4T release.
 - `bsp_url` / `sample_rootfs_url` (required): download URLs.
 - `bsp_sha256` / `sample_rootfs_sha256` (required): 64-character SHA256 digests.
 
@@ -79,7 +79,7 @@ jetson-fw flash configs/xavier-nx.yaml --target xavier-nx
 - `keep_intermediate` (default `true`)
 
 ### `kernel`
-- `source_tag` (default `jetson_35.2.1`): used for the kernel/device-tree source sync that the build runs before compiling.
+- `source_tag` (default `jetson_<l4t.release>`): used for the kernel/device-tree source sync that the build runs before compiling.
 - `defconfig` (default `tegra_defconfig`)
 - `config_fragments` (default empty)
 - `extra_dts` (default empty)

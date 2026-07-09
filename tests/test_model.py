@@ -57,6 +57,17 @@ def test_valid_model_accepts_defaults(tmp_path: Path) -> None:
     assert schema_path.exists()
 
 
+def test_model_accepts_non_default_l4t_release_and_derives_kernel_tag() -> None:
+    custom = dict(BASE)
+    custom["l4t"] = dict(BASE["l4t"])
+    custom["l4t"]["release"] = "35.6.4"
+    custom["kernel"] = {"defconfig": "tegra_defconfig"}
+
+    config = BuildConfig.model_validate(custom)
+    assert config.l4t.release == "35.6.4"
+    assert config.kernel.source_tag == "jetson_35.6.4"
+
+
 def test_invalid_flash_config_rejected() -> None:
     invalid = dict(BASE)
     invalid["targets"] = [
