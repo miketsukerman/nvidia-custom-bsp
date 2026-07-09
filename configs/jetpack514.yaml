@@ -13,13 +13,13 @@ docker:
   environment:
     JOBS: "8"
 
-# https://developer.nvidia.com/embedded/jetson-linux-r3564 
+# https://developer.nvidia.com/embedded/jetson-linux-r3560
 l4t:
-  release: "35.6.4"
-  bsp_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.4/release/jetson_linux_r35.6.4_aarch64.tbz2"
-  bsp_sha256: "3361faf48a8dea6fe15e9120b994d87e46b90c2aad0ed4dd3f8b7cdd65c7ad49"
-  sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.4/release/tegra_linux_sample-root-filesystem_r35.6.4_aarch64.tbz2"
-  sample_rootfs_sha256: "e268cec67d566dfe73fe5d6585a665dc3bf530ca6b5d6ae54029fd00b5d7bf73"
+  release: "35.6.0"
+  bsp_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.0/release/jetson_linux_r35.6.0_aarch64.tbz2"
+  bsp_sha256: "1cc07ea946df064b1eb5d6ba8bc289d84e6b9f437b5f538e95a0d2ae6639e601"
+  sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.0/release/tegra_linux_sample-root-filesystem_r35.6.0_aarch64.tbz2"
+  sample_rootfs_sha256: "b4efbda585681111034ca84251116c3af85fb329c63ac4d25360216e807bc6a4"
 
 toolchain:
   name: "bootlin-gcc-9.3"
