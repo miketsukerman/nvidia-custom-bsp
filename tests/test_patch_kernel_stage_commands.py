@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from rich.console import Console
+
 from jetson_fw.config.model import BuildConfig
 from jetson_fw.docker.runner import DockerRunner
 from jetson_fw.stages.base import StageContext
 from jetson_fw.stages.patch_kernel import PatchKernelStage
-from jetson_fw.utils.logging import get_logger
+from jetson_fw.utils.logging import Logger, get_logger
 from jetson_fw.utils.shell import ShellRunner
 
 
@@ -71,8 +73,10 @@ def build_config(
     return config
 
 
-def make_context(config: BuildConfig, *, with_target: bool = False) -> StageContext:
-    logger = get_logger()
+def make_context(
+    config: BuildConfig, *, with_target: bool = False, logger: Logger | None = None
+) -> StageContext:
+    logger = logger or get_logger()
     return StageContext(
         config=config,
         docker=DockerRunner(config, ShellRunner(logger)),
@@ -146,3 +150,33 @@ def test_patch_kernel_target_patches_appended_to_global(tmp_path: Path) -> None:
     # global patch is applied first
     assert "global.patch" in cmds[0]
     assert "target.patch" in cmds[1]
+
+
+def test_patch_kernel_logs_patch_progress_in_normal_mode(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    patch_host = repo_root / "patches" / "fix-usb.patch"
+    patch_host.parent.mkdir(parents=True)
+    patch_host.write_text("--- a/drivers/usb/core/hub.c\n", encoding="utf-8")
+    config = build_config(tmp_path, global_patches=[str(patch_host)])
+    console = Console(record=True, stderr=True, color_system=None, width=160)
+    logger = Logger(verbose=False, quiet=False, console=console)
+    context = make_context(config, logger=logger)
+
+    PatchKernelStage().commands(context)
+
+    assert "Patching kernel (1/1): fix-usb.patch" in console.export_text()
+
+
+def test_patch_kernel_does_not_log_patch_progress_in_verbose_mode(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    patch_host = repo_root / "patches" / "fix-usb.patch"
+    patch_host.parent.mkdir(parents=True)
+    patch_host.write_text("--- a/drivers/usb/core/hub.c\n", encoding="utf-8")
+    config = build_config(tmp_path, global_patches=[str(patch_host)])
+    console = Console(record=True, stderr=True, color_system=None, width=160)
+    logger = Logger(verbose=True, quiet=False, console=console)
+    context = make_context(config, logger=logger)
+
+    PatchKernelStage().commands(context)
+
+    assert "Patching kernel (1/1): fix-usb.patch" not in console.export_text()

@@ -34,7 +34,7 @@ class Logger:
 
     def info(self, message: str) -> None:
         if not self.quiet:
-            self._print(message)
+            self._print(message, style="cyan")
 
     def success(self, message: str) -> None:
         if not self.quiet:
@@ -49,7 +49,7 @@ class Logger:
 
     def debug(self, message: str) -> None:
         if self.verbose and not self.quiet:
-            self._print(message, style="dim")
+            self._print(message, style="dim blue")
 
     @contextlib.contextmanager
     def status(self, message: str) -> Generator[None, None, None]:
