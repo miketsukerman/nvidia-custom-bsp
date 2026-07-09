@@ -1,0 +1,67 @@
+From f5f53ebc4b6bf4834804928494add00c529ddc38 Mon Sep 17 00:00:00 2001
+From: Edgar Cherkasov <edgar.cherkasov@snt.rs>
+Date: Tue, 6 Sep 2022 18:58:35 +0200
+Subject: [PATCH 05/16] swconfig: fix build errors
+
+Make the swconfig driver compatible with current (5.10) kernel.
+---
+ drivers/net/phy/swconfig.c | 25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/net/phy/swconfig.c b/drivers/net/phy/swconfig.c
+index 78c50112afc5..7d43753fe177 100755
+--- a/drivers/net/phy/swconfig.c
++++ b/drivers/net/phy/swconfig.c
+@@ -301,13 +301,7 @@ static void swconfig_defaults_init(struct switch_dev *dev)
+ }
+ 
+ 
+-static struct genl_family switch_fam = {
+-	.id = GENL_ID_GENERATE,
+-	.name = "switch",
+-	.hdrsize = 0,
+-	.version = 1,
+-	.maxattr = SWITCH_ATTR_MAX,
+-};
++static struct genl_family switch_fam;
+ 
+ static const struct nla_policy switch_policy[SWITCH_ATTR_MAX+1] = {
+ 	[SWITCH_ATTR_ID] = { .type = NLA_U32 },
+@@ -621,8 +615,8 @@ swconfig_parse_ports(struct sk_buff *msg, struct nlattr *head,
+ 		if (val->len >= max)
+ 			return -EINVAL;
+ 
+-		if (nla_parse_nested(tb, SWITCH_PORT_ATTR_MAX, nla,
+-				port_policy))
++		if (nla_parse_nested_deprecated(tb, SWITCH_PORT_ATTR_MAX, nla,
++				port_policy, NULL))
+ 			return -EINVAL;
+ 
+ 		if (!tb[SWITCH_PORT_ID])
+@@ -982,6 +976,17 @@ static struct genl_ops swconfig_ops[] = {
+ 	}
+ };
+ 
++static struct genl_family switch_fam = {
++	.name = "switch",
++	.hdrsize = 0,
++	.version = 1,
++	.maxattr = SWITCH_ATTR_MAX,
++	.policy = switch_policy,
++	.module = THIS_MODULE,
++	.ops = swconfig_ops,
++	.n_ops = ARRAY_SIZE(swconfig_ops),
++};
++
+ #ifdef CONFIG_OF
+ void
+ of_switch_load_portmap(struct switch_dev *dev)
+@@ -1134,7 +1139,7 @@ swconfig_init(void)
+ 	genl_unregister_family(&switch_fam);
+ 	return err;
+ #else
+-	err = genl_register_family_with_ops(&switch_fam, swconfig_ops);
++	err = genl_register_family(&switch_fam);
+ 	if (err)
+ 		return err;
+ 	return 0;

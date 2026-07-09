@@ -1,0 +1,48 @@
+/*
+ * Top level DTS file for CVM:P3668-0001 and CVB:P3509-0000.
+ *
+ * Copyright (c) 2019-2020, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
+
+/dts-v1/;
+#include "common/tegra194-p3668-common.dtsi"
+#include "common/tegra194-p3509-0000-a00.dtsi"
+
+#define CAM_I2C_MUX_AIR_020    TEGRA194_MAIN_GPIO(Q, 3)
+
+/ {
+	nvidia,dtsfilename = __FILE__;
+	nvidia,dtbbuildtime = __DATE__, __TIME__;
+
+	compatible = "nvidia,p3449-0000+p3668-0000", "nvidia,p3449-0000+p3668-0001", "nvidia,p3509-0000+p3668-0000", "nvidia,p3509-0000+p3668-0001", "nvidia,tegra194";
+
+	cam_i2cmux {
+		mux-gpios = <&tegra_main_gpio CAM_I2C_MUX_AIR_020 GPIO_ACTIVE_HIGH>;
+	};
+
+	i2c@31e0000 {
+		tpm_i2c_ptp: tpm_i2c_ptp@2e {
+			compatible = "nuvoton,npct75x";
+			reg = <0x2e>;
+		};
+	};
+
+	leds {
+		status = "disabled";
+	};
+};
+
+#if TEGRA_PCIE_VERSION < DT_VERSION_2
+&suspend_gpio {
+	status = "disabled";
+};
+#endif

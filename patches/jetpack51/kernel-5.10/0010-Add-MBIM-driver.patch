@@ -1,0 +1,23 @@
+From cb3f7ff0886c509271542e6313185c57a0eb75e4 Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Wed, 9 Mar 2022 14:54:18 +0800
+Subject: [PATCH 10/16] Add MBIM driver.
+
+Cherry picked 82b6a483691560350c611b10b2cd67706a2f66d9 from
+https://AIM-Linux@dev.azure.com/AIM-Linux/EPC-R7200/_git/kernel
+---
+ arch/arm64/configs/tegra_epcr7200_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/tegra_epcr7200_defconfig b/arch/arm64/configs/tegra_epcr7200_defconfig
+index 775c8d2caebc..e9ab63dc994d 100644
+--- a/arch/arm64/configs/tegra_epcr7200_defconfig
++++ b/arch/arm64/configs/tegra_epcr7200_defconfig
+@@ -521,6 +521,7 @@ CONFIG_USB_RTL8152=y
+ CONFIG_USB_LAN78XX=m
+ CONFIG_USB_USBNET=y
+ CONFIG_USB_NET_CDC_EEM=m
++CONFIG_USB_NET_CDC_MBIM=m
+ CONFIG_USB_NET_DM9601=m
+ CONFIG_USB_NET_SR9700=m
+ CONFIG_USB_NET_SR9800=m

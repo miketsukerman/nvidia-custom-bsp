@@ -1,0 +1,23 @@
+From 1114b6cba1a47ff4a892518f201159c8ffca1eb5 Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Tue, 15 Mar 2022 17:17:04 +0800
+Subject: [PATCH 11/16] fix i210 NIC disappear while nvme ssd plug-in.
+
+Cherry picked 8a9e5e9b81732741cf95e04f61cd691833d72c98 from
+https://AIM-Linux@dev.azure.com/AIM-Linux/AIR-020/_git/kernel
+---
+ drivers/pci/controller/pci-tegra.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/controller/pci-tegra.c b/drivers/pci/controller/pci-tegra.c
+index f5f8b9e4d53a..f72bfa159e0b 100644
+--- a/drivers/pci/controller/pci-tegra.c
++++ b/drivers/pci/controller/pci-tegra.c
+@@ -3303,6 +3303,7 @@ static int apply_link_speed(struct seq_file *s, void *data)
+ 
+ 	seq_printf(s, "Changing link speed to %s... ",
+ 			(is_gen2_speed) ? "Gen2" : "Gen1");
++	msleep(1000);
+ 	tegra_pcie_link_speed(pcie, is_gen2_speed);
+ 	seq_puts(s, "Done\n");
+ 	return 0;

@@ -1,0 +1,38 @@
+From 2818979899caadf2f4b23b21b44b5188f74e2ff9 Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Tue, 30 Nov 2021 17:22:04 +0800
+Subject: [PATCH 08/16] Add CONFIG_ARCH_ADVANTECH.
+
+Cherry picked 7c2e9ffcf0b2cef40a31fc77459780a2a52c0725 from
+https://AIM-Linux@dev.azure.com/AIM-Linux/EPC-R7200/_git/kernel
+---
+ arch/arm64/Kconfig.platforms                | 5 +++++
+ arch/arm64/configs/tegra_epcr7200_defconfig | 1 +
+ 2 files changed, 6 insertions(+)
+
+diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+index 5c4ac1c9f4e0..6cdf098f02e4 100644
+--- a/arch/arm64/Kconfig.platforms
++++ b/arch/arm64/Kconfig.platforms
+@@ -326,4 +326,9 @@ config ARCH_ZYNQMP
+ 	help
+ 	  This enables support for Xilinx ZynqMP Family
+ 
++config ARCH_ADVANTECH
++       bool "Advantech board"
++       help
++         This enables support for Advantech Board.
++
+ endmenu
+diff --git a/arch/arm64/configs/tegra_epcr7200_defconfig b/arch/arm64/configs/tegra_epcr7200_defconfig
+index 42ba116fa8eb..775c8d2caebc 100644
+--- a/arch/arm64/configs/tegra_epcr7200_defconfig
++++ b/arch/arm64/configs/tegra_epcr7200_defconfig
+@@ -1228,6 +1228,7 @@ CONFIG_ARCH_TEGRA_210_SOC=y
+ CONFIG_ARCH_TEGRA_186_SOC=y
+ CONFIG_ARCH_TEGRA_194_SOC=y
+ CONFIG_ARCH_TEGRA_234_SOC=y
++CONFIG_ARCH_ADVANTECH=y
+ # CONFIG_HW_RANDOM_TPM is not set
+ # CONFIG_HW_RANDOM_CAVIUM is not set
+ CONFIG_TCG_TPM=y

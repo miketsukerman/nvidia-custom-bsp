@@ -1,0 +1,27 @@
+From ae40b5f0861fd72b8420f4aad9bb55b61feced8f Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Thu, 9 Sep 2021 14:46:10 +0800
+Subject: [PATCH 07/16] Add Sierra EM7565 support.
+
+Cherry picked 094bbfe24643cef235357da0c8ea8d9cd0b1580f from
+https://AIM-Linux@dev.azure.com/AIM-Linux/EPC-R7200/_git/kernel
+---
+ arch/arm64/configs/tegra_epcr7200_defconfig | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/configs/tegra_epcr7200_defconfig b/arch/arm64/configs/tegra_epcr7200_defconfig
+index bfa57498ec09..42ba116fa8eb 100644
+--- a/arch/arm64/configs/tegra_epcr7200_defconfig
++++ b/arch/arm64/configs/tegra_epcr7200_defconfig
+@@ -1228,6 +1228,11 @@ CONFIG_ARCH_TEGRA_210_SOC=y
+ CONFIG_ARCH_TEGRA_186_SOC=y
+ CONFIG_ARCH_TEGRA_194_SOC=y
+ CONFIG_ARCH_TEGRA_234_SOC=y
++# CONFIG_HW_RANDOM_TPM is not set
++# CONFIG_HW_RANDOM_CAVIUM is not set
++CONFIG_TCG_TPM=y
++CONFIG_TCG_TIS_I2C=y
++CONFIG_USB_SERIAL_QUALCOMM=y
+ CONFIG_TEGRA_KFUSE=y
+ CONFIG_TEGRA_FUSE_BURN=y
+ CONFIG_TEGRA_210_DVFS=y

@@ -1,0 +1,29 @@
+From 97f52223aecd4dae92a52f386f3224033fc1b751 Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Thu, 3 Jun 2021 10:47:24 +0800
+Subject: [PATCH 02/16] Add SIOCSMIIREG command for phytool.
+
+Cherry picked 0c16ed8190a75233f7d8b95c8e459cd35d3dca8f from
+https://AIM-Linux@dev.azure.com/AIM-Linux/AIR-020/_git/kernel
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+ mode change 100644 => 100755 drivers/net/ethernet/intel/igb/igb_main.c
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+old mode 100644
+new mode 100755
+index f854d41c6c94..a735c499a529
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8965,6 +8965,10 @@ static int igb_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+ 			return -EIO;
+ 		break;
+ 	case SIOCSMIIREG:
++		if (igb_write_phy_reg(&adapter->hw, data->reg_num & 0x1F,
++				     data->val_in))
++			return -EIO;
++		break;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}

@@ -1,0 +1,32 @@
+From b41dd9dda3a4d8cff855539b68f6fa5a36e91b2f Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Wed, 6 Apr 2022 09:05:27 +0800
+Subject: [PATCH 15/16] disable tpm_class_shutdown because of adding sysfs.
+
+Cherry picked 35e05a311847450a1cea7ae0cd4aaeb1f3b2957c from
+https://AIM-Linux@dev.azure.com/AIM-Linux/EPC-R7200/_git/kernel
+---
+ drivers/char/tpm/tpm-chip.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/char/tpm/tpm-chip.c b/drivers/char/tpm/tpm-chip.c
+index ddaeceb7e109..55f9a990147d 100644
+--- a/drivers/char/tpm/tpm-chip.c
++++ b/drivers/char/tpm/tpm-chip.c
+@@ -293,6 +293,8 @@ static void tpm_devs_release(struct device *dev)
+  */
+ static int tpm_class_shutdown(struct device *dev)
+ {
++	// We comment this because of adding sysfs.
++	/*
+ 	struct tpm_chip *chip = container_of(dev, struct tpm_chip, dev);
+ 
+ 	down_write(&chip->ops_sem);
+@@ -305,6 +307,7 @@ static int tpm_class_shutdown(struct device *dev)
+ 	chip->ops = NULL;
+ 	up_write(&chip->ops_sem);
+ 
++	*/
+ 	return 0;
+ }
+ 

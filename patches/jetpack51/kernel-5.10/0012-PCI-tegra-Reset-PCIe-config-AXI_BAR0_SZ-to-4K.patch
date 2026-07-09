@@ -1,0 +1,23 @@
+From a1bffac3f363f6c77cceae61ddc8631841973a9a Mon Sep 17 00:00:00 2001
+From: "Liszt.Kao" <liszt.kao@advantech.com.tw>
+Date: Fri, 22 Apr 2022 08:58:12 +0800
+Subject: [PATCH 12/16] PCI: tegra: Reset PCIe config AXI_BAR0_SZ to 4K.
+
+Cherry picked 1b3ea1132eb914483f65b6c94656a27f27fcaa11 from
+https://AIM-Linux@dev.azure.com/AIM-Linux/AIR-020/_git/kernel
+---
+ drivers/pci/controller/pci-tegra.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/controller/pci-tegra.c b/drivers/pci/controller/pci-tegra.c
+index f72bfa159e0b..bf355da1bb28 100644
+--- a/drivers/pci/controller/pci-tegra.c
++++ b/drivers/pci/controller/pci-tegra.c
+@@ -1251,6 +1251,7 @@ static void tegra_pcie_setup_translations(struct tegra_pcie *pcie)
+ 
+ 	/* Bar 0: type 1 extended configuration space */
+ 	size = resource_size(&pcie->cs);
++	afi_writel(pcie, SZ_4K >> 12, AFI_AXI_BAR0_SZ);
+ 	afi_writel(pcie, pcie->cs.start, AFI_AXI_BAR0_START);
+ 	afi_writel(pcie, size >> 12, AFI_AXI_BAR0_SZ);
+ 
