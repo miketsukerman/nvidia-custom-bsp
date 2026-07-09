@@ -14,11 +14,11 @@ docker:
     JOBS: "8"
 
 l4t:
-  release: "35.2.1"
-  bsp_url: "https://developer.nvidia.com/downloads/jetson-linux-r3521-aarch64tbz2"
-  bsp_sha256: "9959bcd3de79de231a8fb54119f9cdb57a753542d44d994e346664028142d40d"
-  sample_rootfs_url: "https://developer.nvidia.com/downloads/linux-sample-root-filesystem-r3521aarch64tbz2"
-  sample_rootfs_sha256: "aad1ba13dbae2c8657123d39b23dc836ea46f7d7a2da24a8adb4c0e58da501d6"
+  release: "35.6.4"
+  bsp_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.4/release/jetson_linux_r35.6.4_aarch64.tbz2"
+  bsp_sha256: "3361faf48a8dea6fe15e9120b994d87e46b90c2aad0ed4dd3f8b7cdd65c7ad49"
+  sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v6.4/release/tegra_linux_sample-root-filesystem_r35.6.4_aarch64.tbz2"
+  sample_rootfs_sha256: "e268cec67d566dfe73fe5d6585a665dc3bf530ca6b5d6ae54029fd00b5d7bf73"
 
 toolchain:
   name: "bootlin-gcc-9.3"
@@ -31,10 +31,8 @@ workspace:
   keep_intermediate: true
 
 kernel:
-  source_tag: "jetson_35.2.1"
+  source_tag: "jetson_35.6.4"
   defconfig: "tegra_defconfig"
-  config_fragments:
-    - "../fixtures/configs/enable-can.config"
 
 rootfs:
   install_modules: true
@@ -59,8 +57,34 @@ targets:
   - name: "orin-nx"
     module: "p3767"
     flash_config: "jetson-orin-nano-devkit"
-    root_device: "internal"
+    root_device: "nvme0n1"
     enabled: true
     kernel:
       extra_dts:
         - "../fixtures/dts/orin-carrier.dts"
+
+  - name: "air-020"
+    module: "p3668"
+    flash_config: "jetson-xavier-nx-devkit-emmc"
+    root_device: "nvme0n1"
+    enabled: true
+    kernel:
+      extra_dts:
+        - "../fixtures/dts/air-020-carrier.dts"
+    bsp:
+      overlays:
+        - src: "../fixtures/bootloader/air-020"
+          dest: "/bootloader"
+
+  - name: "air-021"
+    module: "p3767"
+    flash_config: "jetson-orin-nano-devkit"
+    root_device: "nvme0n1"
+    enabled: true
+    kernel:
+      extra_dts:
+        - "../fixtures/dts/air-021-carrier.dts"
+    bsp:
+      overlays:
+        - src: "../fixtures/bootloader/air-021"
+          dest: "/bootloader"

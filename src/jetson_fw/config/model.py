@@ -29,6 +29,7 @@ class RootDeviceEnum(str, Enum):
     """Supported root device targets."""
 
     MMCBLK0P1 = "mmcblk0p1"
+    NVME0N1 = "nvme0n1"
     INTERNAL = "internal"
 
 
