@@ -192,6 +192,10 @@ class KernelConfig(BaseModel):
         default_factory=list,
         description="Optional custom DTS files to include in the build",
     )
+    patches: list[Path] = Field(
+        default_factory=list,
+        description="Optional kernel patch files to apply to the synced kernel sources",
+    )
 
 
 class RootfsOverlay(BaseModel):
@@ -272,6 +276,10 @@ class TargetKernelConfig(BaseModel):
     extra_dts: list[Path] | None = Field(
         default=None,
         description="Optional additional custom DTS files for this target",
+    )
+    patches: list[Path] | None = Field(
+        default=None,
+        description="Optional additional kernel patch files for this target",
     )
 
 
@@ -432,6 +440,8 @@ class BuildConfig(BaseModel):
             kernel.config_fragments = [*kernel.config_fragments, *target.kernel.config_fragments]
         if target.kernel.extra_dts is not None:
             kernel.extra_dts = [*kernel.extra_dts, *target.kernel.extra_dts]
+        if target.kernel.patches is not None:
+            kernel.patches = [*kernel.patches, *target.kernel.patches]
         return kernel
 
     def effective_rootfs(self, target: TargetConfig | None = None) -> RootfsConfig:

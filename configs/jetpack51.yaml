@@ -33,6 +33,7 @@ workspace:
 kernel:
   source_tag: "jetson_35.6.4"
   defconfig: "tegra_defconfig"
+  patches: []
 
 rootfs:
   install_modules: true

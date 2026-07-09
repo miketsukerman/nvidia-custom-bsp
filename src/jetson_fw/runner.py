@@ -10,6 +10,7 @@ from jetson_fw.stages.build_kernel import BuildKernelStage
 from jetson_fw.stages.customize_bsp import CustomizeBspStage
 from jetson_fw.stages.fetch_bsp import FetchBspStage
 from jetson_fw.stages.flash import FlashStage
+from jetson_fw.stages.patch_kernel import PatchKernelStage
 from jetson_fw.stages.source_sync import SourceSyncStage
 from jetson_fw.stages.toolchain import ToolchainStage
 from jetson_fw.utils.logging import Logger
@@ -27,6 +28,7 @@ class BuildRunner:
             "toolchain": ToolchainStage(),
             "customize_bsp": CustomizeBspStage(),
             "source_sync": SourceSyncStage(),
+            "patch_kernel": PatchKernelStage(),
             "build_kernel": BuildKernelStage(),
             "assemble_rootfs": AssembleRootfsStage(),
             "flash": FlashStage(),

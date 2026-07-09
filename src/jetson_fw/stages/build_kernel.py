@@ -7,7 +7,7 @@ from .base import Stage, StageContext
 
 class BuildKernelStage(Stage):
     name = "build_kernel"
-    dependencies = ("toolchain", "source_sync")
+    dependencies = ("toolchain", "source_sync", "patch_kernel")
     target_scoped = True
 
     def commands(self, context: StageContext) -> list[str]:

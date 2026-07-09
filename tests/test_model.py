@@ -159,3 +159,60 @@ def test_invalid_bsp_overlay_destination_rejected() -> None:
     invalid["bsp"] = {"overlays": [{"src": "/tmp/bootloader.dtb", "dest": "bootloader/dtb"}]}
     with pytest.raises(ValidationError):
         BuildConfig.model_validate(invalid)
+
+
+def test_kernel_patches_defaults_to_empty_list() -> None:
+    config = BuildConfig.model_validate(BASE)
+    assert config.kernel.patches == []
+
+
+def test_kernel_patches_accepts_explicit_list() -> None:
+    custom = dict(BASE)
+    custom["kernel"] = dict(BASE["kernel"])
+    custom["kernel"]["patches"] = ["/tmp/fix-usb.patch"]
+    config = BuildConfig.model_validate(custom)
+    assert config.kernel.patches == [Path("/tmp/fix-usb.patch")]
+
+
+def test_effective_kernel_merges_patches() -> None:
+    custom = dict(BASE)
+    custom["kernel"] = {
+        "source_tag": "jetson_35.2.1",
+        "defconfig": "tegra_defconfig",
+        "patches": ["/tmp/global.patch"],
+    }
+    custom["targets"] = [
+        {
+            "name": "air-020",
+            "module": "p3767",
+            "flash_config": "air-020-production",
+            "root_device": "internal",
+            "enabled": True,
+            "kernel": {"patches": ["/tmp/target.patch"]},
+        }
+    ]
+    config = BuildConfig.model_validate(custom)
+    kernel = config.effective_kernel(config.targets[0])
+    assert [str(p) for p in kernel.patches] == ["/tmp/global.patch", "/tmp/target.patch"]
+
+
+def test_target_patches_none_does_not_override_global() -> None:
+    custom = dict(BASE)
+    custom["kernel"] = {
+        "source_tag": "jetson_35.2.1",
+        "defconfig": "tegra_defconfig",
+        "patches": ["/tmp/global.patch"],
+    }
+    custom["targets"] = [
+        {
+            "name": "air-020",
+            "module": "p3767",
+            "flash_config": "air-020-production",
+            "root_device": "internal",
+            "enabled": True,
+            "kernel": {"defconfig": "air020_defconfig"},
+        }
+    ]
+    config = BuildConfig.model_validate(custom)
+    kernel = config.effective_kernel(config.targets[0])
+    assert [str(p) for p in kernel.patches] == ["/tmp/global.patch"]
