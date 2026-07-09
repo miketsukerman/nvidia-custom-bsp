@@ -18,6 +18,10 @@ class PatchKernelStage(Stage):
         )
         if not patches:
             return [":"]
+        if not context.logger.verbose and not context.logger.quiet:
+            total = len(patches)
+            for index, patch in enumerate(patches, start=1):
+                context.logger.info(f"Patching kernel ({index}/{total}): {patch.name}")
         return [
             f"git -C {source_dir} apply --whitespace=fix {context.repo_path(patch)}"
             for patch in patches
