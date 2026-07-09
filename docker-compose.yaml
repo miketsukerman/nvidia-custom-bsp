@@ -8,7 +8,7 @@ services:
       - ./build:/workspace/build
     working_dir: /workspace/repo
     entrypoint: ["python3", "-m", "jetson_fw.cli"]
-    command: ["validate", "configs/xavier-nx.yaml"]
+    command: ["validate", "configs/jetpack51.yaml"]
 
   build:
     build:
@@ -19,7 +19,7 @@ services:
       - ./build:/workspace/build
     working_dir: /workspace/repo
     entrypoint: ["python3", "-m", "jetson_fw.cli"]
-    command: ["build", "configs/xavier-nx.yaml"]
+    command: ["build", "configs/jetpack51.yaml"]
 
   flash:
     build:
@@ -32,4 +32,4 @@ services:
       - /dev/bus/usb:/dev/bus/usb
     working_dir: /workspace/repo
     entrypoint: ["python3", "-m", "jetson_fw.cli"]
-    command: ["flash", "configs/xavier-nx.yaml", "--target", "xavier-nx"]
+    command: ["flash", "configs/jetpack51.yaml", "--target", "xavier-nx"]
