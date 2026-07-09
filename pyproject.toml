@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "jetson-firmware-builder"
 version = "0.1.0"
-description = "Configuration-driven firmware builder for NVIDIA Jetson L4T R35.2.1"
+description = "Configuration-driven firmware builder for NVIDIA Jetson L4T"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Jetson Firmware Builder" }]
